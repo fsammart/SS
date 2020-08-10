@@ -1,5 +1,7 @@
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class CIM {
@@ -23,12 +25,10 @@ public class CIM {
 
     public static void cim(){
 
-        // TODO: Add improvement just looking for neighbours up and right
-
         cells.stream().filter(particles -> !particles.isEmpty()).forEach(particles -> {
 
             int cellX = particles.get(0).getCellX();
-            int cellY = particles.get(0).getCellX();
+            int cellY = particles.get(0).getCellY();
 
             particles.stream().forEach(p -> {
                 findNeighbours(p, cellX, cellY);
@@ -44,22 +44,8 @@ public class CIM {
 
 
         if (periodicContour) {
-
-            if (cellX >= M){
-                cellX = 0;
-            }
-
-            if (cellY >= M){
-                cellY = 0;
-            }
-
-            if (cellX == -1){
-                cellX = M - 1;
-            }
-
-            if (cellY == -1){
-                cellY = M - 1;
-            }
+            cellX = (cellX + M) % M;
+            cellY = (cellY + M) % M;
 
         } else {
             if (cellX >= M || cellX < 0 || cellY >= M || cellY < 0) {
@@ -68,13 +54,13 @@ public class CIM {
             }
         }
 
-        int adjCellNumber = (int) (cellY * M + cellX);
+        int adjCellNumber = cellY * M + cellX;
 
         List<Particle> cellParticles = cells.get(adjCellNumber);
 
         for (Particle adjacentParticle : cellParticles){
 
-            if (adjacentParticle.getId() != p.getId()){ // Avoid checking the same particle
+            if (adjacentParticle.id != p.id){ // Avoid checking the same particle
 
                 double distance;
 
@@ -105,7 +91,8 @@ public class CIM {
         particles.stream().forEach(p -> {
             int cellX = (int) Math.floor(p.getX() / lm);
             int cellY = (int) Math.floor(p.getY() / lm);
-            int cellNumber = (int) (cellY * M + cellX);
+            int cellNumber = cellY * M + cellX;
+
             List <Particle> cellParticles = cells.get(cellNumber);
             p.setCellX(cellX);
             p.setCellY(cellY);

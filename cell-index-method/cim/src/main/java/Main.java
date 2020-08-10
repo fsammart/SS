@@ -1,7 +1,7 @@
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) throws FileNotFoundException {
@@ -10,14 +10,18 @@ public class Main {
 
 
         // TODO: parse arguments from command line.
-        int N = 10000; // Number of particles
-        double L = 300; // Size of square side
-        int M = 10; // MxM matrix
-        boolean periodicContour = false;
-        double interactionRadius = 10;
+        int N = 1000; // Number of particles
+        double L = 10; // Size of square side
+        int M = 50; // MxM matrix
+        boolean periodicContour = true;
+        double interactionRadius = 0.1; // L/M > rc
+
+        // TODO: check condition L/M > interactionRadius
 
         List<Particle> l = getRandomParticles(N, L);
         List<Particle> l2 = new ArrayList<>(l);
+
+        System.out.println("CIM");
 
         long startTime = System.currentTimeMillis();
 
@@ -27,6 +31,7 @@ public class Main {
         long elapsedTime = endTime - startTime;
 
         printResults(elapsedTime, l);
+
         System.out.println("Brute Force");
 
         startTime = System.currentTimeMillis();
@@ -36,16 +41,19 @@ public class Main {
         endTime = System.currentTimeMillis();
         elapsedTime = endTime - startTime;
 
-        printResults(elapsedTime, l);
+        printResults(elapsedTime, l2);
+
+        if(l.containsAll(l2) && l2.containsAll(l)){
+            System.out.println("Same Result for BF and CIM");
+        }
     }
 
     public static List<Particle> getRandomParticles(int N, double L){
-        Random r = new Random(System.currentTimeMillis());
+        Random r = new Random(1000);
         List<Particle> particles = new ArrayList<>();
         r.doubles(N , 0, L)
                 .forEach(x -> particles.add(new Particle(x, r.nextDouble() * L ,0)));
-        r.doubles(N , 0, L)
-                .forEach(x -> particles.add(new Particle(x, r.nextDouble() * L ,0)));
+
         return particles;
     }
 
@@ -59,7 +67,7 @@ public class Main {
                             p.getNeighbours().stream().map(Particle::getId).collect(Collectors.toList())
             );
         });
-         */
+        */
     }
 
 }

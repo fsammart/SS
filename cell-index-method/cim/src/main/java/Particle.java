@@ -30,6 +30,8 @@ public class Particle implements Comparable<Particle>{
         final double mcx = Math.abs(x - particle.x);
         final double mcy = Math.abs(y - particle.y);
         final double r = radius + particle.radius;
+
+        // TODO: check for optimizations
         double dx = mcx;
         double dy = mcy;
         if ((L - mcx - r) < (mcx - r)) dx = L - mcx;
