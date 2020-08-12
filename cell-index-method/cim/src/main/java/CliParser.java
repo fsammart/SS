@@ -1,4 +1,3 @@
-/*
 import org.apache.commons.cli.*;
 
 public class CliParser {
@@ -6,27 +5,39 @@ public class CliParser {
     public static String staticFile;
     public static String dynamicFile;
     public static String outputFile;
-    static int matrixSize;
-    static double interactionRadius;
-    static boolean periodicContour = false;
-    static boolean bruteForce = false;
+
+    public static String strategy;
+
+    public static boolean periodicContour;
+    public static int M;
+    /* L needs to be readed from input file */
+    public static double L;
+    public static int N;
+    public static double interactionRadius;
+
+    public static String BF = "BF";
+    public static String CIM = "CIM";
 
     private static Options createOptions(){
         Options options = new Options();
         options.addOption("h", "help", false, "Shows help description.");
-        options.addOption("m","matrix", true, "Size of the squared matrix.");
-        options.addOption("rc", "radius", true, "Radius of interaction between particles.");
-        options.addOption("sf", "static_file", true, "Path to the file with the static values.");
-        options.addOption("df", "dynamic_file", true, "Path to the file with the dynamic values.");
-        options.addOption("pc", "periodic_contour", false, "Enables periodic contour conditions.");
-        options.addOption("bf", "brute_force", false, "Uses brute force instead of CIM.");
+        options.addOption("sf", "static_file", true, "Static file with topology details");
+        options.addOption("df", "dynamic_file", true, "Dynamic file with volatile information");
         options.addOption("o", "output", true, "Path to output file.");
+        options.addOption("ir", "interaction_radius", true, "Interaction Radius");
+        options.addOption("pc", "periodic_contour", false, "Enables periodic contour, connected edged");
+        options.addOption("s", "strategy", false, "Choose Strategy: BF or CIM");
+        options.addOption("M",  true, "Size of the squared matrix.");
+        options.addOption("L",  true, "Length of side");
+        options.addOption("N",  true, "Number of Nodes");
+
+
         return options;
     }
 
-    public static void parseOptions(String[] args){
+    public static void parse(String[] args){
         Options options = createOptions();
-        CommandLineParser parser = new BasicParser();
+        CommandLineParser parser = new DefaultParser();
 
         try{
             CommandLine cmd = parser.parse(options, args);
@@ -34,31 +45,42 @@ public class CliParser {
                 help(options);
             }
 
-            if(cmd.hasOption("bf")){
-                bruteForce = true;
+            strategy = BF;
+            if(cmd.hasOption("s")){
+                strategy = cmd.getOptionValue("s");
             }
 
             if (!cmd.hasOption("sf")){
-                System.out.println("You must specify a static file!");
+                System.out.println("Static File is required");
                 System.exit(1);
             }
 
             if (!cmd.hasOption("o")){
-                System.out.println("You must specify an output file!");
+                System.out.println("Output file is required");
                 System.exit(1);
             }
 
-            if(cmd.hasOption("df"))
+
+            if(cmd.hasOption("df")) {
                 dynamicFile = cmd.getOptionValue("df");
+            }else{
+                if(cmd.hasOption("L")){
+                   L = Double.parseDouble(cmd.getOptionValue("L"));
+                   M = Integer.parseInt(cmd.getOptionValue("M"));
+                   N = Integer.parseInt(cmd.getOptionValue("N"));
+
+                }else{
+                    System.out.println("Dynamic File or L are required");
+                    System.exit(1);
+                }
+            }
 
             staticFile = cmd.getOptionValue("sf");
             outputFile = cmd.getOptionValue("o");
 
-            if (cmd.hasOption("m")){
-                matrixSize = Integer.parseInt(cmd.getOptionValue("m"));
-            }
-            if (cmd.hasOption("rc")){
-                interactionRadius = Double.parseDouble(cmd.getOptionValue("rc"));
+
+            if (cmd.hasOption("ir")){
+                interactionRadius = Double.parseDouble(cmd.getOptionValue("ir"));
             }
             if (cmd.hasOption("pc")){
                 periodicContour = true;
@@ -77,4 +99,3 @@ public class CliParser {
     }
 }
 
- */
