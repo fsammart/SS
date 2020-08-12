@@ -1,22 +1,27 @@
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) throws FileNotFoundException {
-        //CliParser.parseOptions(args);
-
-
+        CliParser.parse(args);
 
         // TODO: parse arguments from command line.
-        int N = 1000; // Number of particles
-        double L = 10; // Size of square side
-        int M = 50; // MxM matrix
-        boolean periodicContour = true;
-        double interactionRadius = 0.1; // L/M > rc
+        int N = CliParser.N; // Number of particles
+        double L = CliParser.L; // Size of square side
+        int M = CliParser.M; // MxM matrix
+        boolean periodicContour = CliParser.periodicContour;
+        double interactionRadius = CliParser.interactionRadius;
 
-        // TODO: check condition L/M > interactionRadius
+        String output = CliParser.outputFile;
+
+        if(!CIM.checkLMCondition(L,M,interactionRadius)){
+            throw new IllegalArgumentException("L/M condition");
+        }
 
         List<Particle> l = getRandomParticles(N, L);
         List<Particle> l2 = new ArrayList<>(l);
@@ -28,9 +33,8 @@ public class Main {
         CIM.compute(l, M, L, periodicContour, interactionRadius);
 
         long endTime = System.currentTimeMillis();
-        long elapsedTime = endTime - startTime;
+        long elapsedTimeCIM = endTime - startTime;
 
-        printResults(elapsedTime, l);
 
         System.out.println("Brute Force");
 
@@ -39,13 +43,13 @@ public class Main {
         BruteForce.compute(N, l2, periodicContour, interactionRadius);
 
         endTime = System.currentTimeMillis();
-        elapsedTime = endTime - startTime;
+        long elapsedTimeBF = endTime - startTime;
 
-        printResults(elapsedTime, l2);
-
+        boolean same = false;
         if(l.containsAll(l2) && l2.containsAll(l)){
-            System.out.println("Same Result for BF and CIM");
+            same = true;
         }
+        logResults(elapsedTimeCIM, elapsedTimeBF, same, l);
     }
 
     public static List<Particle> getRandomParticles(int N, double L){
@@ -57,17 +61,22 @@ public class Main {
         return particles;
     }
 
-    public static void printResults(long elapsedTime, List<Particle> particles){
-        System.out.println("Elapsed time: " +  elapsedTime + " ms");
-        /*
-        particles.stream().filter(p -> !p.getNeighbours().isEmpty()).forEach(p ->{
-
-            System.out.println(
-                    p.getId() + " (" + p.getX() + ", " + p.getY() + "): " +
-                            p.getNeighbours().stream().map(Particle::getId).collect(Collectors.toList())
-            );
-        });
-        */
+    public static void logResults(long elapsedTimeCIM, long elapsedTimeBF,boolean same, List<Particle> particles) throws FileNotFoundException {
+        System.out.println("Output logged to file");
+        final String filename = "./" + CliParser.outputFile;
+        File file = new File(filename);
+        FileOutputStream fos = new FileOutputStream(file);
+        PrintStream ps = new PrintStream(fos);
+        System.setOut(ps);
+        System.out.println("Time CIM (ms) ->" + String.valueOf(elapsedTimeCIM));
+        System.out.println("Time BF (ms) ->" + String.valueOf(elapsedTimeBF));
+        System.out.println("Result is equal to BF ->" + String.valueOf(same) );
+        particles.forEach( particle ->
+                System.out.println(
+                        particle.getId() + " " +
+                                particle.getNeighbours().stream().map(Particle::getId).collect(Collectors.toList())
+                )
+        );
     }
 
 }

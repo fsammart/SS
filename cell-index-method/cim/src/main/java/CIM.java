@@ -1,5 +1,6 @@
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,10 +20,20 @@ public class CIM {
         CIM.L = L;
         CIM.M = M;
         CIM.interactionRadius = interactionRadius;
+
+        if(interactionRadius == 0){
+            cells = new LinkedList<>();
+        }
+        checkLMCondition(L,M,interactionRadius);
         populateMatrix(particles, M, L);
         cim();
     }
-
+    public static boolean checkLMCondition( double L, int M, double interactionRadius){
+        assert(L > 0);
+        assert (M > 0);
+        assert (interactionRadius >= 0);
+        return L > interactionRadius * M;
+    }
     public static void cim(){
 
         cells.stream().filter(particles -> !particles.isEmpty()).forEach(particles -> {
