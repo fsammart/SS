@@ -3,8 +3,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) throws FileNotFoundException {
@@ -17,13 +15,18 @@ public class Main {
         boolean periodicContour = CliParser.periodicContour;
         double interactionRadius = CliParser.interactionRadius;
 
-        String output = CliParser.outputFile;
-
         if(!CIM.checkLMCondition(L,M,interactionRadius)){
             throw new IllegalArgumentException("L/M condition");
         }
 
-        List<Particle> l = getRandomParticles(N, L);
+        List<Particle> l ;
+
+        if(CliParser.random){
+            l = RandomParticles.getRandomParticles(N, L, CliParser.rMin,CliParser.rMax);
+        } else {
+            l = FileParser.particleList;
+        }
+
         List<Particle> l2 = new ArrayList<>(l);
 
         System.out.println("CIM");
@@ -49,16 +52,8 @@ public class Main {
         if(l.containsAll(l2) && l2.containsAll(l)){
             same = true;
         }
+        assert(same);
         logResults(elapsedTimeCIM, elapsedTimeBF, same, l);
-    }
-
-    public static List<Particle> getRandomParticles(int N, double L){
-        Random r = new Random(1000);
-        List<Particle> particles = new ArrayList<>();
-        r.doubles(N , 0, L)
-                .forEach(x -> particles.add(new Particle(x, r.nextDouble() * L ,0)));
-
-        return particles;
     }
 
     public static void logResults(long elapsedTimeCIM, long elapsedTimeBF,boolean same, List<Particle> particles) throws FileNotFoundException {
@@ -68,13 +63,16 @@ public class Main {
         FileOutputStream fos = new FileOutputStream(file);
         PrintStream ps = new PrintStream(fos);
         System.setOut(ps);
-        System.out.println("Time CIM (ms) ->" + String.valueOf(elapsedTimeCIM));
-        System.out.println("Time BF (ms) ->" + String.valueOf(elapsedTimeBF));
-        System.out.println("Result is equal to BF ->" + String.valueOf(same) );
+//        System.out.println("Time CIM (ms) ->" + String.valueOf(elapsedTimeCIM));
+//        System.out.println("Time BF (ms) ->" + String.valueOf(elapsedTimeBF));
+//        System.out.println("Result is equal to BF ->" + String.valueOf(same) );
         particles.forEach( particle ->
                 System.out.println(
-                        particle.getId() + " " +
-                                particle.getNeighbours().stream().map(Particle::getId).collect(Collectors.toList())
+                        particle.getId() +
+                                particle.getNeighbours().stream()
+                                        .map(Particle::getId)
+                                        .map(String::valueOf)
+                                        .reduce("", (accum,x) ->  accum + "," + x)
                 )
         );
     }

@@ -9,8 +9,15 @@ public class Particle implements Comparable<Particle>{
     public Set<Particle> neighbours; // other particles in same cell
     public int id;
     public int cellX, cellY;
+    public double property;
     public static int ID_SEQUENCE = 1;
 
+    public Particle(double radius, double property){
+        this.radius = radius;
+        this.property = property;
+        neighbours = new TreeSet<>();
+        this.id = ID_SEQUENCE++;
+    }
     public Particle(double x, double y, double radius) {
         this.x = x;
         this.y = y;
@@ -27,16 +34,20 @@ public class Particle implements Comparable<Particle>{
 
     public double contourDistanceTo(final Particle particle) {
         final double L = CIM.L;
-        final double mcx = Math.abs(x - particle.x);
-        final double mcy = Math.abs(y - particle.y);
+        final double directDistancex = Math.abs(x - particle.x);
+        final double directDistancey = Math.abs(y - particle.y);
         final double r = radius + particle.radius;
 
-        // TODO: check for optimizations
-        double dx = mcx;
-        double dy = mcy;
-        if ((L - mcx - r) < (mcx - r)) dx = L - mcx;
-        if ((L - mcy - r) < (mcy - r)) dy = L - mcy;
-        return Math.hypot(dx, dy) - r;
+        double conoturDistancex = directDistancex;
+        double contourDistancey = directDistancey;
+        /* check if particles are near through contour */
+        if ((L - directDistancex - r) < (directDistancex - r)){
+            conoturDistancex = L - directDistancex;
+        }
+        if ((L - directDistancey - r) < (directDistancey - r)){
+            contourDistancey = L - directDistancey;
+        }
+        return Math.hypot(conoturDistancex, contourDistancey) - r;
     }
 
 
@@ -90,5 +101,9 @@ public class Particle implements Comparable<Particle>{
 
     public void setY(double y) {
         this.y = y;
+    }
+
+    public double getProperty() {
+        return property;
     }
 }

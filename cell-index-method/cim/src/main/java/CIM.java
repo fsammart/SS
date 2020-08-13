@@ -13,7 +13,6 @@ public class CIM {
     public static int M;
     public static double L;
     public static double interactionRadius;
-
     public static void compute(List<Particle> particles,
                                int M, double L, boolean periodicContour, double interactionRadius){
         CIM.periodicContour = periodicContour;
@@ -32,7 +31,9 @@ public class CIM {
         assert(L > 0);
         assert (M > 0);
         assert (interactionRadius >= 0);
-        return L > interactionRadius * M;
+        /* check for worst condition when 2 particles with the greatest radius)
+        * If radius is 0, then this condition is also guaranteed*/
+        return L > (interactionRadius - 2 * FileParser.minRadius) * M;
     }
     public static void cim(){
 

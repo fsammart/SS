@@ -15,8 +15,13 @@ public class CliParser {
     public static int N;
     public static double interactionRadius;
 
+    public static boolean random;
+
     public static String BF = "BF";
     public static String CIM = "CIM";
+
+    public static double rMin;
+    public static double rMax;
 
     private static Options createOptions(){
         Options options = new Options();
@@ -28,8 +33,12 @@ public class CliParser {
         options.addOption("pc", "periodic_contour", false, "Enables periodic contour, connected edged");
         options.addOption("s", "strategy", false, "Choose Strategy: BF or CIM");
         options.addOption("M",  true, "Size of the squared matrix.");
+
+        options.addOption("r", "random", false, "Generate random particles");
         options.addOption("L",  true, "Length of side");
         options.addOption("N",  true, "Number of Nodes");
+        options.addOption("rmin", "min_radius", true, "Minimum radius for randomize");
+        options.addOption("rmax", "max_radius", true, "Maximum radius for randomize");
 
 
         return options;
@@ -50,43 +59,68 @@ public class CliParser {
                 strategy = cmd.getOptionValue("s");
             }
 
-            if (!cmd.hasOption("sf")){
-                System.out.println("Static File is required");
+            if(!cmd.hasOption("M")){
+                System.out.println("Matrix size required");
                 System.exit(1);
             }
+
+            M = Integer.parseInt(cmd.getOptionValue("M"));
 
             if (!cmd.hasOption("o")){
                 System.out.println("Output file is required");
                 System.exit(1);
             }
-
-
-            if(cmd.hasOption("df")) {
-                dynamicFile = cmd.getOptionValue("df");
-            }else{
-                if(cmd.hasOption("L")){
-                   L = Double.parseDouble(cmd.getOptionValue("L"));
-                   M = Integer.parseInt(cmd.getOptionValue("M"));
-                   N = Integer.parseInt(cmd.getOptionValue("N"));
-
-                }else{
-                    System.out.println("Dynamic File or L are required");
-                    System.exit(1);
-                }
-            }
-
-            staticFile = cmd.getOptionValue("sf");
             outputFile = cmd.getOptionValue("o");
-
 
             if (cmd.hasOption("ir")){
                 interactionRadius = Double.parseDouble(cmd.getOptionValue("ir"));
+            } else {
+                // get interaction radius from property
+                // TODO: get interaction radius from propery
             }
+
             if (cmd.hasOption("pc")){
                 periodicContour = true;
             }
 
+            if(cmd.hasOption("r")){
+                // we are generating random particles
+                random = true;
+                if(cmd.hasOption("L") && cmd.hasOption("N")){
+                    L = Double.parseDouble(cmd.getOptionValue("L"));
+                    N = Integer.parseInt(cmd.getOptionValue("N"));
+                }else{
+                    System.out.println("L and N are required");
+                    System.exit(1);
+                }
+                if(cmd.hasOption("rmin") && cmd.hasOption("rmax")){
+                    rMin = Double.parseDouble(cmd.getOptionValue("rmin"));
+                    rMax = Integer.parseInt(cmd.getOptionValue("rmax"));
+                }else{
+                    System.out.println("rmin and rmax are required");
+                    System.exit(1);
+                }
+            } else {
+                random = false;
+                if (!cmd.hasOption("sf")){
+                    System.out.println("Static File is required");
+                    System.exit(1);
+                }
+                staticFile = cmd.getOptionValue("sf");
+
+                if(cmd.hasOption("df")) {
+                    dynamicFile = cmd.getOptionValue("df");
+                    FileParser.parseFiles(staticFile, dynamicFile);
+                    L = FileParser.L;
+                    N = FileParser.N;
+                }else{
+
+                }
+
+            }
+
         } catch (Exception e){
+            e.printStackTrace();
             System.out.println("Command not recognized.");
             help(options);
         }
