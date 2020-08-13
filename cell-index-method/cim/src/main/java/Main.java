@@ -8,7 +8,6 @@ public class Main {
     public static void main(String[] args) throws FileNotFoundException {
         CliParser.parse(args);
 
-        // TODO: parse arguments from command line.
         int N = CliParser.N; // Number of particles
         double L = CliParser.L; // Size of square side
         int M = CliParser.M; // MxM matrix
@@ -57,15 +56,14 @@ public class Main {
     }
 
     public static void logResults(long elapsedTimeCIM, long elapsedTimeBF,boolean same, List<Particle> particles) throws FileNotFoundException {
-        System.out.println("Output logged to file");
+        System.out.println("Time CIM (ms) ->" + String.valueOf(elapsedTimeCIM));
+        System.out.println("Time BF (ms) ->" + String.valueOf(elapsedTimeBF));
+        System.out.println("Result is equal to BF ->" + String.valueOf(same) );
         final String filename = "./" + CliParser.outputFile;
         File file = new File(filename);
         FileOutputStream fos = new FileOutputStream(file);
         PrintStream ps = new PrintStream(fos);
         System.setOut(ps);
-//        System.out.println("Time CIM (ms) ->" + String.valueOf(elapsedTimeCIM));
-//        System.out.println("Time BF (ms) ->" + String.valueOf(elapsedTimeBF));
-//        System.out.println("Result is equal to BF ->" + String.valueOf(same) );
         particles.forEach( particle ->
                 System.out.println(
                         particle.getId() +

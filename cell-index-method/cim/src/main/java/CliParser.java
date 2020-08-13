@@ -95,7 +95,7 @@ public class CliParser {
                 }
                 if(cmd.hasOption("rmin") && cmd.hasOption("rmax")){
                     rMin = Double.parseDouble(cmd.getOptionValue("rmin"));
-                    rMax = Integer.parseInt(cmd.getOptionValue("rmax"));
+                    rMax = Double.parseDouble(cmd.getOptionValue("rmax"));
                 }else{
                     System.out.println("rmin and rmax are required");
                     System.exit(1);

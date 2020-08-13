@@ -20,9 +20,6 @@ public class CIM {
         CIM.M = M;
         CIM.interactionRadius = interactionRadius;
 
-        if(interactionRadius == 0){
-            cells = new LinkedList<>();
-        }
         checkLMCondition(L,M,interactionRadius);
         populateMatrix(particles, M, L);
         cim();
@@ -93,10 +90,10 @@ public class CIM {
     }
 
     public static void populateMatrix(List<Particle> particles, int M, double L){
-        cells = new ArrayList<List<Particle>>();
+        cells = new ArrayList<List<Particle>>(M*M);
 
         for (int i = 0; i < M*M ; i++){
-            cells.add(new ArrayList<>());
+            cells.add(new ArrayList<>(particles.size()));
         }
 
         double lm = L/M;

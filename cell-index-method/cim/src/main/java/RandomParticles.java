@@ -3,17 +3,17 @@ import java.util.*;
 public class RandomParticles {
 
     static Random r = new Random(System.currentTimeMillis());
-    private static int MAX_COLLISIONS = 1000;
+    private static int MAX_COLLISIONS = 100000;
 
     static double randomDouble(double min, double max) {
-        if (min >= max) {
+        if (min > max) {
             throw new IllegalArgumentException("max must be greater than min");
         }
         return min + (max - min) * r.nextDouble();
     }
 
     public static List<Particle> getRandomParticles(int N, double L, double radiusMin, double radiusMax){
-        List<Particle> particles = new ArrayList<>();
+        List<Particle> particles = new ArrayList<>(N);
         int collidingCounter = 0;
 
         do {
@@ -28,6 +28,9 @@ public class RandomParticles {
 
         } while (particles.size() < N && collidingCounter < MAX_COLLISIONS);
 
+        if(collidingCounter >= MAX_COLLISIONS){
+            throw new IllegalStateException("Cannot create array");
+        }
         return particles;
     }
 
