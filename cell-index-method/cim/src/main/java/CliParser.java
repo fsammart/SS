@@ -31,7 +31,7 @@ public class CliParser {
         options.addOption("o", "output", true, "Path to output file.");
         options.addOption("ir", "interaction_radius", true, "Interaction Radius");
         options.addOption("pc", "periodic_contour", false, "Enables periodic contour, connected edged");
-        options.addOption("s", "strategy", false, "Choose Strategy: BF or CIM");
+        options.addOption("s", "strategy", true, "Choose Strategy: BF or CIM");
         options.addOption("M",  true, "Size of the squared matrix.");
 
         options.addOption("r", "random", false, "Generate random particles");
@@ -96,6 +96,7 @@ public class CliParser {
                 if(cmd.hasOption("rmin") && cmd.hasOption("rmax")){
                     rMin = Double.parseDouble(cmd.getOptionValue("rmin"));
                     rMax = Double.parseDouble(cmd.getOptionValue("rmax"));
+                    FileParser.minRadius = rMin;
                 }else{
                     System.out.println("rmin and rmax are required");
                     System.exit(1);

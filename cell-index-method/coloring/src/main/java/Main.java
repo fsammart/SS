@@ -127,10 +127,19 @@ public class Main {
                         color = NEIGHBOUR;
                     }
                     System.out.println(
-                            particle.getX() + "," + particle.getY() + "," + particle.radius + "," + color
+                            particle.getX() + "," + particle.getY() + "," + particle.radius + "," + translate(color)
                     );
                 }
         );
+    }
+
+    private static String translate(int color){
+        switch(color){
+            case CHOSEN :return "chosen";
+            case NEIGHBOUR:  return "Neighbour";
+            case COMMON: return "Common";
+        }
+        return null;
     }
     private static void help(Options options){
         HelpFormatter helpFormatter = new HelpFormatter();

@@ -12,9 +12,12 @@ import org.apache.commons.cli.*;
 
 public class Main {
 
+    static RandomParticles rp ;
+
     private static Map.Entry<Long,Long> run(int N, double L, int M, double interactionRadius, double radius) throws Exception {
         List<Particle> l ;
-        l = RandomParticles.getRandomParticles(N, L, radius,radius);
+        l = rp.getRandomParticlesFromMatrix(N);
+
         List<Particle> l2 = new ArrayList<>(l);
 
         long startTime = System.nanoTime();
@@ -38,7 +41,6 @@ public class Main {
             throw new IllegalStateException("Wrong Prcessing");
         }
 
-        //logResults(elapsedTimeCIM,elapsedTimeBF,same,l);
         return new AbstractMap.SimpleEntry(elapsedTimeCIM,  elapsedTimeBF);
 
     }
@@ -51,10 +53,11 @@ public class Main {
         boolean periodicContour = false;
         double interactionRadius = 1;
         double radius = 0.25;
-        double areaParticle = Math.PI * radius * radius;
         int REPEAT = 5;
 
         FileParser.minRadius = radius;
+
+        rp = new RandomParticles(L, radius);
 
         final String filename = "./tp1" + System.currentTimeMillis() ;
         File file = new File(filename);
@@ -62,7 +65,7 @@ public class Main {
         PrintStream ps = new PrintStream(fos);
         System.setOut(ps);
 
-        int fitParticles = (int) Math.floor((L * L)/areaParticle);
+        int fitParticles = rp.getMatrixRandomParticlesSize();
 
         System.out.println("N,M,D,CIM1,BF1,CIM2,BF2,CIM3,BF3,CIM4,BF4,CIM5,BF5,CIM,BF");
         for(int N = 1; N <= fitParticles; N ++ ) {

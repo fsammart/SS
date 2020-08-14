@@ -7,10 +7,15 @@ Original file is located at
     https://colab.research.google.com/drive/1bo17lvSzFUgbMfJU1xsoOYVOiztmblLX
 """
 
+import sys
 import altair as alt
 import pandas as pd
 
-res = pd.read_csv("colors",skiprows=[0])
+from altair_saver import save
+
+file = sys.argv[1]
+
+res = pd.read_csv(file,skiprows=[0])
 
 import altair as alt
 
@@ -24,4 +29,4 @@ chart = alt.Chart(res).mark_circle(size = 60).encode(
     height=600
 )
 
-chart.save('chart.svg')
+save(chart, 'chart.png')
