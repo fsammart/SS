@@ -96,7 +96,7 @@ public class CliParser {
                 if(cmd.hasOption("rmin") && cmd.hasOption("rmax")){
                     rMin = Double.parseDouble(cmd.getOptionValue("rmin"));
                     rMax = Double.parseDouble(cmd.getOptionValue("rmax"));
-                    FileParser.minRadius = rMin;
+                    FileParser.maxRadius= rMax;
                 }else{
                     System.out.println("rmin and rmax are required");
                     System.exit(1);

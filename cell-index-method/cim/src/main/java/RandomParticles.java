@@ -91,14 +91,9 @@ public class RandomParticles {
         do {
             Particle randomParticle = generateParticle(L, radiusMin,radiusMax);
 
-            Particle p = mutateParticleCollides(randomParticle, particles);
+            //Particle p = mutateParticleCollides(randomParticle, particles);
 
-            if(p != null) {
-                particles.add(p);
-                collidingCounter = 0;
-            } else {
-                collidingCounter++;
-            }
+            particles.add(randomParticle);
 
         } while (particles.size() < N && collidingCounter < MAX_COLLISIONS);
 

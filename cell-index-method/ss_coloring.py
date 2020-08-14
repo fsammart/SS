@@ -23,10 +23,9 @@ res = pd.read_csv(file,skiprows=[0])
 import altair as alt
 
 
-chart = alt.Chart(res).mark_circle(size = 60).encode(
+chart = alt.Chart(res).mark_circle().encode(
     x='ParticleX',
     y='ParticleY',
-    size = 'ParticleRadius',
     color=alt.Color('ParticleType', type='nominal'),
 ).properties(
     width=600,

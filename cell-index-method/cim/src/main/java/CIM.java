@@ -30,7 +30,7 @@ public class CIM {
         assert (interactionRadius >= 0);
         /* check for worst condition when 2 particles with the greatest radius)
         * If radius is 0, then this condition is also guaranteed*/
-        return L > (interactionRadius - 2 * FileParser.minRadius) * M;
+        return L > (interactionRadius + 2 * FileParser.maxRadius) * M;
     }
     public static void cim(){
 
