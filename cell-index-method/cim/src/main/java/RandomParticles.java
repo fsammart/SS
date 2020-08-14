@@ -82,10 +82,10 @@ public class RandomParticles {
     public static List<Particle> getRandomParticles(int N, double L, double radiusMin, double radiusMax){
         List<Particle> particles = new ArrayList<>(N);
 
-        if(radiusMin == radiusMax){
-            RandomParticles r = new RandomParticles(L,radiusMax);
-            return r.getRandomParticlesFromMatrix(N);
-        }
+//        if(radiusMin == radiusMax){
+//            RandomParticles r = new RandomParticles(L,radiusMax);
+//            return r.getRandomParticlesFromMatrix(N);
+//        }
         int collidingCounter = 0;
 
         do {
