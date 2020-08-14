@@ -105,14 +105,20 @@ public class RandomParticles {
         if(collidingCounter >= MAX_COLLISIONS){
             throw new IllegalStateException("Cannot create array");
         }
+
+        int i = 1;
+        for(Particle p: particles){
+            p.id = i++;
+        }
         return particles;
     }
 
     private static Particle generateParticle(double L, double radiusMin, double radiusMax) {
+        double r = randomDouble(radiusMin,radiusMax);
         return new Particle(
-                randomDouble(0,L),
-                randomDouble(0,L),
-                randomDouble(radiusMin,radiusMax));
+                randomDouble(r, L - r),
+                randomDouble(r ,L - r),
+                r);
     }
 
     private static boolean collides(Particle particle, List<Particle> particles) {
