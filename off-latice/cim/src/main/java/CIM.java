@@ -16,7 +16,7 @@ public class CIM {
     public static double interactionRadius;
 
     private static int  getMValue(double L, double maxRadius1, double maxRadius2) {
-        return (int) Math.floor(L / (interactionRadius +  maxRadius1 + maxRadius2));
+        return (int) Math.ceil(L / (interactionRadius +  maxRadius1 + maxRadius2)) - 1;
     }
 
     public static void compute(List<? extends Particle> particles,
