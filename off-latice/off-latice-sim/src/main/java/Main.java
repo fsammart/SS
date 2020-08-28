@@ -26,7 +26,7 @@ public class Main {
             l = FileParser.particleList;
         }
 
-        OffLaticeSim.simulate(L,l,eta,time,CliParser.outputDirectory + "/t");
+        OffLaticeSim.simulate(L,l,eta,time,CliParser.outputDirectory );
     }
 
 

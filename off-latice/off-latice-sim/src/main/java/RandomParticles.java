@@ -14,6 +14,8 @@ public class RandomParticles {
         return min + (max - min) * r.nextDouble();
     }
 
+
+    
     public static List<SpeedParticle> getRandomParticles(int N, double L){
         List<SpeedParticle> particles = new ArrayList<>(N);
 

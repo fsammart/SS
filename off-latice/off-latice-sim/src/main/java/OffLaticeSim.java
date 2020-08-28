@@ -1,36 +1,66 @@
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.List;
-import java.util.Set;
+import java.awt.geom.Point2D;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class OffLaticeSim {
 
-    public double L;
-    public int N;
-    public double eta;
+    public static double L;
+    public static int N;
+    public static double eta;
+    public static List<Double> vaEvolution ;
 
     public static double TWO_PI = Math.PI * 2;
+    public static double vel;
 
 
     public static void simulate(double L, List<? extends Particle> particles, double eta, int time, String name) throws IOException {
         dynamicFile(particles, 0, name,L);
+        vaEvolution = new ArrayList<>(time + 1);
+        double vx;
+        double vy;
+        double velAvg;
+        vel = ((SpeedParticle)particles.get(0)).vel;
+        N = particles.size();
+        Map<SpeedParticle, Double> newAngles = new ConcurrentHashMap<>();
 
-        for (int i = 1; i < time; i++) {
-
+        for (int i = 0; i < time; i++) {
+            newAngles.clear();
+            long start = System.currentTimeMillis();
             CIM.compute(particles,L,true, 1,0);
-
-            for(Particle p : particles){
+            long elapsed = System.currentTimeMillis() - start;
+            vx = 0;
+            vy = 0;
+            particles.parallelStream().forEach(p -> {
                 SpeedParticle sp = (SpeedParticle) p;
+                // for va analysis
+
 
                 // get new coordinates
                 sp.move();
-                sp.setAngle(newAngle(sp,eta));
+                newAngles.put(sp, newAngle(sp,eta));
+            });
+
+            //update angles after calculation
+
+            for (Particle p: particles) {
+
+                SpeedParticle sp = (SpeedParticle) p;
+                vx += sp.vel * Math.cos(sp.angle);
+                vy += sp.vel * Math.sin(sp.angle);
+
+                sp.angle = newAngles.get(sp);
+                p.neighbours.clear();
+
             }
 
+            velAvg = Math.hypot(vx , vy) / (N * vel);
+            vaEvolution.add(velAvg);
             dynamicFile(particles, i, name,L);
         }
+
+        printStatistics(name);
     }
 
     private static double newAngle(SpeedParticle p, double eta) {
@@ -59,12 +89,33 @@ public class OffLaticeSim {
     }
 
     public static double normalizeAngle(double angle) {
-
         return angle - TWO_PI * Math.floor((angle + Math.PI) / TWO_PI);
     }
 
+    public static void printStatistics(String name) throws IOException {
+        File file = new File(name + "/statistics" + ".txt");
+        if(file.getParentFile() != null) {
+            file.getParentFile().mkdirs();
+        }
+        file.createNewFile();
+
+        FileOutputStream fos = new FileOutputStream(file);
+        PrintStream ps = new PrintStream(fos);
+        PrintStream syso = System.out;
+        System.setOut(ps);
+
+        System.out.println(CliParser.N);
+        System.out.println(CliParser.L);
+        System.out.println(CliParser.eta);
+        System.out.println(CliParser.time);
+
+        vaEvolution.forEach(System.out::println);
+        System.setOut(syso);
+
+    }
+
     public static void dynamicFile(List<? extends Particle> l, int time, String name, double L) throws IOException {
-        File file = new File(name + "-" + time + ".txt");
+        File file = new File(name +"/t" + "-" + time + ".txt");
         if(file.getParentFile() != null) {
             file.getParentFile().mkdirs();
         }

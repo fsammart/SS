@@ -11,5 +11,13 @@
 
     <artifactId>analysis</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>itba.ss.2020Q2G8.tp2</groupId>
+            <artifactId>off-latice-sim</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
 </project>
