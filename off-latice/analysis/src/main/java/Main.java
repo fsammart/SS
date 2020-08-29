@@ -36,10 +36,10 @@ public class Main {
 
         for(float i = 0; i <= 1; i += 0.25) {
             eta = i;
-            for(int j = 0; j <= 1; j++) {
+            for(int j = 0; j <= 4; j++) {
                 N = nValues[j];
                 L = lValues[j];
-                for(int k = 0 ; k <= 2; k ++) {
+                for(int k = 0 ; k <= 4; k ++) {
                     l = RandomParticles.getRandomParticles(N, L);
                     OffLaticeSim.simulate(L, l, eta, time, String.format("./VariableEta/Feta%.2f-N%d-L%.2f-%d", eta, N, L, k));
                     vaEvolution = OffLaticeSim.vaEvolution;
