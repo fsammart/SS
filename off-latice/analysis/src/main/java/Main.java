@@ -70,15 +70,12 @@ public class Main {
         System.out.println("eta\tN\tL\tva\ttime");
         System.setOut(syso);
 
-        for(double i = 0.1; i < 10; i += 0.5) {
-            eta = i;
-            for(N = minN; N <= maxN ; N += step) { // density up to 10
-                for(int k = 0 ; k <= 2; k ++) {
-                    l = RandomParticles.getRandomParticles(N, L);
-                    OffLaticeSim.simulate(L, l, eta, time, String.format("./VariableDensity/Feta%.2f-N%d-L%.2f-%d", eta, N, L, k));
-                    vaEvolution = OffLaticeSim.vaEvolution;
-                    printCSV(vaEvolution, eta, N, L, time, ps);
-                }
+        for(N = minN; N <= maxN ; N += step) { // density up to 10
+            for(int k = 0 ; k <= 2; k ++) {
+                l = RandomParticles.getRandomParticles(N, L);
+                OffLaticeSim.simulate(L, l, eta, time, String.format("./VariableDensity/Feta%.2f-N%d-L%.2f-%d", eta, N, L, k));
+                vaEvolution = OffLaticeSim.vaEvolution;
+                printCSV(vaEvolution, eta, N, L, time, ps);
             }
         }
     }
