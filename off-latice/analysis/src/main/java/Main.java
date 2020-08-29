@@ -7,41 +7,90 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) throws IOException {
+        int time = 3000; // use last 2000 state for stdev
+
+        calculateVariableEta(time);
+        calculateVariableDensity(time);
+        System.exit(0);
+    }
+
+
+    public static void calculateVariableEta(int time) throws IOException {
         double eta;
-        double L  =25;
+        double L;
         int N;
-        int time = 3000; // use last 100 state for stdev
+
+        int[] nValues = {40, 100, 400, 4000, 10000};
+        float[] lValues = {3.1f, 5f, 10f, 31.6f, 50f};
         List<SpeedParticle> l;
         List<Double> vaEvolution;
 
-        File file = new File("Statistics" + System.currentTimeMillis() + ".csv");
+        File file = new File("./VariableEta/Statistics" + System.currentTimeMillis() + ".tsv");
         file.createNewFile();
         FileOutputStream fos = new FileOutputStream(file);
         PrintStream ps = new PrintStream(fos);
         PrintStream syso = System.out;
         System.setOut(ps);
-        System.out.println("eta,N,L,va,time");
+        System.out.println("eta\tN\tL\tva\ttime");
         System.setOut(syso);
 
-        for(double i = 0; i <=5; i += 0.25) {
+        for(float i = 0; i <= 1; i += 0.25) {
             eta = i;
-            for(N = 10; N <= 5000; N *= 2){
-                l = RandomParticles.getRandomParticles(N, L);
-                OffLaticeSim.simulate(L,l,eta,time, String.format("Feta%.2f-N%d-L%.2f",eta,N,L));
-                vaEvolution = OffLaticeSim.vaEvolution;
-                printCSV(vaEvolution, eta, N, L, time, ps);
+            for(int j = 0; j <= 1; j++) {
+                N = nValues[j];
+                L = lValues[j];
+                for(int k = 0 ; k <= 2; k ++) {
+                    l = RandomParticles.getRandomParticles(N, L);
+                    OffLaticeSim.simulate(L, l, eta, time, String.format("./VariableEta/Feta%.2f-N%d-L%.2f-%d", eta, N, L, k));
+                    vaEvolution = OffLaticeSim.vaEvolution;
+                    printCSV(vaEvolution, eta, N, L, time, ps);
+                }
             }
-
         }
-
     }
+
+
+    public static void calculateVariableDensity(int time) throws IOException {
+        double eta = 2.5;
+        double L = 25;
+        int minN = 100;
+        int step = 250;
+        int maxN = 6250; // density = 10
+        int N;
+
+        List<SpeedParticle> l;
+        List<Double> vaEvolution;
+
+        File file = new File("./VariableDensity/Statistics" + System.currentTimeMillis() + ".tsv");
+        file.createNewFile();
+        FileOutputStream fos = new FileOutputStream(file);
+        PrintStream ps = new PrintStream(fos);
+        PrintStream syso = System.out;
+        System.setOut(ps);
+        System.out.println("eta\tN\tL\tva\ttime");
+        System.setOut(syso);
+
+        for(double i = 0.1; i < 10; i += 0.5) {
+            eta = i;
+            for(N = minN; N <= maxN ; N += step) { // density up to 10
+                for(int k = 0 ; k <= 2; k ++) {
+                    l = RandomParticles.getRandomParticles(N, L);
+                    OffLaticeSim.simulate(L, l, eta, time, String.format("./VariableDensity/Feta%.2f-N%d-L%.2f-%d", eta, N, L, k));
+                    vaEvolution = OffLaticeSim.vaEvolution;
+                    printCSV(vaEvolution, eta, N, L, time, ps);
+                }
+            }
+        }
+    }
+
 
     public static void printCSV(List<Double> vaEvolution, double eta, int N, double L, int time, PrintStream ps) throws IOException {
         PrintStream syso = System.out;
         System.setOut(ps);
-        for(int i = time - 100; i < time; i ++){
-            System.out.println(String.format("%.2f,%d,%.2f,%.6f,%d",eta, N, L, vaEvolution.get(i), i));
+        for(int i = time - 2000; i < time; i ++){
+            System.out.println(String.format("%.2f\t%d\t%.2f\t%.6f\t%d",eta, N, L, vaEvolution.get(i), i));
         }
         System.setOut(syso);
     }
+
 }
