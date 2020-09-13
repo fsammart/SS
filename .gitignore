@@ -354,3 +354,11 @@ $RECYCLE.BIN/
 
 cell-index-method/.idea/
 off-latice/.idea/
+
+off-latice/test/
+
+off-latice/test2/
+
+*.txt
+
+*.jpg
