@@ -15,7 +15,7 @@ public class OffLaticeSim {
     public static double vel;
 
 
-    public static void simulate(double L, List<? extends Particle> particles, double eta, int time, String name) throws IOException {
+    public static void   simulate(double L, List<? extends Particle> particles, double eta, int time, String name) throws IOException {
         dynamicFile(particles, 0, name,L);
         vaEvolution = new ArrayList<>(time + 1);
         double vx;
@@ -57,7 +57,7 @@ public class OffLaticeSim {
 
             velAvg = Math.hypot(vx , vy) / (N * vel);
             vaEvolution.add(velAvg);
-            dynamicFile(particles, i, name,L);
+            dynamicFile(particles, i + 1, name,L);
         }
 
         printStatistics(name);
@@ -132,7 +132,11 @@ public class OffLaticeSim {
             SpeedParticle sp = (SpeedParticle) p;
             double vx = sp.vel * Math.cos(sp.angle);
             double vy = sp.vel * Math.sin(sp.angle);
-            writer.print(sp.getX() + " " + sp.getY() + " " + vx + " " + vy + " " + sp.angle);
+
+            writer.print(String.format(Locale.US,"%.3f", sp.getX()) + " "
+                    + String.format(Locale.US,"%.3f", sp.getY()) + " "
+                    + String.format(Locale.US,"%.3f", vx) + " "
+                    + String.format(Locale.US,"%.3f", vy) + " " + sp.angle);
         });
 
         } catch (IOException e) {
