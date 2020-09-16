@@ -13,6 +13,7 @@ public class EventToStep {
 
         CliParserStep.parse(args);
         toStep();
+        toStepResults();
     }
 
     public static void toStep() throws FileNotFoundException{
@@ -25,14 +26,11 @@ public class EventToStep {
         Scanner sc = new Scanner(dynamicFile);
         sc.useLocale(Locale.US);
 
-        File resultsFile = new File(CliParserStep.outputDirectory  + "/" + dynamicFileName);
-        Scanner sc2 = new Scanner(resultsFile);
-        sc2.useLocale(Locale.US);
+
 
         File outputFile = new File(CliParserStep.outputDirectory + "/dynamicStep/" + dynamicFile.getName());
         outputFile.getParentFile().mkdirs();
-        File resultsFileStep = new File(CliParserStep.outputDirectory + "/ResultsStep/" + dynamicFile.getName());
-        resultsFileStep.getParentFile().mkdirs();
+
 
         double radiusNormal = 0.0015;
         double radiusSquare = 0.0004;
@@ -55,8 +53,9 @@ public class EventToStep {
                     writer.write(sb1.toString());
                     writer.write(sb.toString());
                 }
-                pasteResultsFile(sc2, resultsFileStep, write);
+
                 for (int i = 0; i < numberOfParticles; i++) {
+                    int id = sc.nextInt();
                     double x = sc.nextDouble();
                     double y = sc.nextDouble();
                     double vx = sc.nextDouble();
@@ -64,7 +63,7 @@ public class EventToStep {
                     if(write) {
                         final StringBuilder sb = new StringBuilder();
 
-                        sb.append(x).append('\t').append(y).append('\t')
+                        sb.append(id).append('\t').append(x).append('\t').append(y).append('\t')
                                 // velocity
                                 .append(vx).append('\t').append(vy).append('\t').append(radiusNormal).append('\n');
                         writer.write(sb.toString());
@@ -72,15 +71,7 @@ public class EventToStep {
                 }
 
             }
-            try (BufferedWriter writer2 = new BufferedWriter(new FileWriter(resultsFileStep, true))) {
-                // now copy last lines
-                while (sc2.hasNextByte()) {
-                    writer2.write(sc2.nextByte());
-                }
-            }catch (IOException e){
-                e.printStackTrace();
-                return ;
-            }
+
 
 
         } catch (IOException e) {
@@ -94,51 +85,64 @@ public class EventToStep {
 
     }
 
+    public static void toStepResults() throws FileNotFoundException {
+        final String dynamicFileName = CliParserStep.dynamicFile;
+        final double dt = CliParserStep.dt;
+
+        File resultsFile = new File(CliParserStep.outputDirectory  + "/" + dynamicFileName);
+        Scanner sc2 = new Scanner(resultsFile);
+        sc2.useLocale(Locale.US);
+
+        File resultsFileStep = new File(CliParserStep.outputDirectory + "/ResultsStep/" + dynamicFileName);
+        resultsFileStep.getParentFile().mkdirs();
+
+        double currentTime = 0;
+        while(sc2.hasNextInt()) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(resultsFileStep, true))) {
+                int iteration = sc2.nextInt();
+                double realTime = sc2.nextDouble();
+                double rightFraction = sc2.nextDouble();
+                double pressure = sc2.nextDouble();
+                double kinetic = sc2.nextDouble();
+                if (realTime >= currentTime) {
+                    currentTime += dt;
+                    final StringBuilder sb = new StringBuilder();
+
+                    sb.append(iteration).append('\t').append(realTime).append('\t')
+                            // velocity
+                            .append(rightFraction).append('\t').append(pressure).append('\t')
+                            .append(pressure).append('\t').append(kinetic).append('\n');
+                    writer.write(sb.toString());
+                }
+
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+        }
+    }
+
 
     private static int drawSquare(StringBuilder sb,double radius) throws IOException {
         double interval = 0.001;
         int numberOfParticles = 0;
 
         for (double i = 0; i < (CliParserStep.L - CliParserStep.g) / 2; i += interval) {
-            double space = CliParser.L - i;
+            double space = CliParserStep.L - i;
 
-            sb.append(CliParserStep.W/2 + "\t" + i + "\t0.0\t0.0\t" +radius +"\n");
-            sb.append(CliParserStep.W/2 + "\t" + space + "\t0.0\t0.0\t" +radius + "\n");
+            sb.append("-1" + '\t' + CliParserStep.W/2 + "\t" + i + "\t0.0\t0.0\t" +radius +"\n");
+            sb.append("-1" + '\t' +CliParserStep.W/2 + "\t" + space + "\t0.0\t0.0\t" +radius + "\n");
 
             numberOfParticles += 2;
         }
 
-        sb.append("0.0\t0.0\t0.0\t0.0\t" +radius +"\n");
-        sb.append(CliParserStep.W + "\t0.0\t0.0\t0.0\t" +radius + "\n");
-        sb.append("0.0\t" + CliParserStep.L+ "\t0.0\t0.0\t" +radius + "\n");
+        sb.append("-1\t0.0\t0.0\t0.0\t0.0\t" +radius +"\n");
+        sb.append("-1" + '\t' +CliParserStep.W + "\t0.0\t0.0\t0.0\t" +radius + "\n");
+        sb.append("-1\t0.0\t" + CliParserStep.L+ "\t0.0\t0.0\t" +radius + "\n");
 
         numberOfParticles += 3;
         return numberOfParticles;
     }
 
-    private static void pasteResultsFile(Scanner sc2, File resultsFileStep, boolean paste){
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(resultsFileStep, true))) {
-            int iteration = sc2.nextInt();
-            double realTime = sc2.nextDouble();
-            double rightFraction = sc2.nextDouble();
-            double pressure = sc2.nextDouble();
-            double kinetic = sc2.nextDouble();
-            if(paste){
-                final StringBuilder sb = new StringBuilder();
-
-                sb.append(iteration).append('\t').append(realTime).append('\t')
-                        // velocity
-                        .append(rightFraction).append('\t').append(pressure).append('\t')
-                        .append(pressure).append('\t').append(kinetic).append('\n');
-                writer.write(sb.toString());
-            }
-
-
-
-        }catch(IOException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-    }
 }

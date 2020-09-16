@@ -44,7 +44,6 @@ public class Main {
         Wall.VERTICAL.setLength(CliParser.L);
         Wall.MIDDLE_VERTICAL.setLength((CliParser.L - CliParser.g)/2.0);
 
-        Particle.v = CliParser.v;
 
         gasDiffusion = new GasDiffusion2D(CliParser.L, CliParser.W, CliParser.g, particles);
 
@@ -67,7 +66,7 @@ public class Main {
         double timeAfterEquilibrium = 0;
         double delta;
         int lastFpsSize = 100;
-        double deltaForEquilibrium = 0.005;
+        double deltaForEquilibrium = 0.02;
 
         do {
             gasDiffusion.run(points);
@@ -83,7 +82,7 @@ public class Main {
 
             systemTime += tc;
 
-            generateOutputDataFile(iteration, systemTime); // save to file the current configuration
+            //generateOutputDataFile(iteration, systemTime); // save to file the current configuration
             iteration++;
             gasDiffusion.totalPressure += gasDiffusion.currentPressure;
             gasDiffusion.currentPressure = 0;
@@ -102,7 +101,7 @@ public class Main {
 
             delta = Math.abs(0.5 - average.getAsDouble());
 
-        } while (!equilibriumReached ? delta > deltaForEquilibrium : timeAfterEquilibrium < MAX_TIME_AFTER_EQUILIBRIUM);
+        } while (!equilibriumReached ? delta >= deltaForEquilibrium : timeAfterEquilibrium < MAX_TIME_AFTER_EQUILIBRIUM);
 
         return points;
     }
@@ -144,7 +143,7 @@ public class Main {
             vx = point.vx;
             vy = point.vy;
 
-            sb.append(point.x).append('\t').append(point.y).append('\t')
+            sb.append(point.id).append('\t').append(point.x).append('\t').append(point.y).append('\t')
                     // velocity
                     .append(vx).append('\t').append(vy).append('\n');
             kineticEnergy += point.kineticEnergy();
@@ -191,7 +190,20 @@ public class Main {
                 .append("Mean pressure ").append(meanPressure).append(lineSeparator)
                 .append("Temperature ").append(temperature).append(lineSeparator);
 
-        writeOutputFile(sb);
+        writeOutputFileStats(sb);
+    }
+
+    private static void writeOutputFileStats(StringBuilder sb) {
+        File file = new File(CliParser.outputDirectory + "/" + name+ "-stats");
+        file.getParentFile().mkdirs();
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
+            writer.write(sb.toString());
+        } catch (IOException e) {
+            System.out.println("An IO Exception ocurred 1");
+            System.exit(1);
+
+        }
     }
 
     private static void writeOutputFile(StringBuilder sb) {
@@ -201,7 +213,7 @@ public class Main {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
             writer.write(sb.toString());
         } catch (IOException e) {
-            System.out.println("An IO Exception ocurred");
+            System.out.println("An IO Exception ocurred 1");
             System.exit(1);
 
         }
@@ -223,7 +235,7 @@ public class Main {
             writer.write(squareSb.toString());
 
         } catch (IOException e) {
-            System.out.println("An IO Exception ocurred");
+            System.out.println("An IO Exception ocurred 2");
             System.exit(1);
 
         }

@@ -13,6 +13,8 @@ public class CliParserStep {
     public static double g;
     public static double dt;
 
+    public static boolean dynamicOutput;
+
 
     private static Options createOptions(){
         Options options = new Options();

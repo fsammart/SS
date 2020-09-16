@@ -20,13 +20,16 @@ public class GasDiffusion2D {
         this.W = W;
         this.groove = groove;
         this.particles = particles;
+        this.equilibriumReached = false;
+        this.totalPressure = 0;
+        this.currentPressure = 0;
+        this.rightSideFraction = 0;
+        this.collisionTime = 0;
     }
 
     public void run(List<Particle> particles){
         final List<Event> minEvents;
 
-        rightSideFraction = 0;
-        collisionTime = 0;
 
         if (particles == null || particles.size() == 0) {
             // nothing to process;
@@ -41,18 +44,11 @@ public class GasDiffusion2D {
 
         // Get Time for collision. Move every particle except the ones to collide.
         final double tc = minEvents.get(0).getTime();
-
-        List<Particle> participants = new ArrayList<>(100);
-        for(Event e: minEvents){
-            participants.addAll(e.getParticipants());
-        }
         for(final Particle point : particles) {
-            if(!participants.contains(point)){
-                point.moveParticle(tc);
-                // If particle is on the right side => add it to the right side
-                if (point.x > W / 2) { // calculate rightSide after update
-                    rightSideFraction++;
-                }
+            point.moveParticle(tc);
+            // If particle is on the right side => add it to the right side
+            if (point.x > W / 2) { // calculate rightSide after update
+                rightSideFraction++;
             }
         }
 

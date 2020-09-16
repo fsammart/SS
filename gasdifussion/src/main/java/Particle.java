@@ -2,7 +2,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class Particle implements Comparable<Particle>{
-    public static double v;
     // Use public for efficiency reasons
     public double x, y;
     public final double radius;
@@ -31,7 +30,7 @@ public class Particle implements Comparable<Particle>{
 
     public double kineticEnergy() {
 
-        return 1/2.0d * mass * Math.pow(v, 2);
+        return 1/2.0d * mass * Math.pow(getSpeed(), 2);
     }
 
     public double getSpeed() {

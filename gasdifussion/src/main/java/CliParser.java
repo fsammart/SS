@@ -97,7 +97,6 @@ public class CliParser {
                 }
 
             }
-            Particle.v = v;
 
         } catch (Exception e){
             e.printStackTrace();

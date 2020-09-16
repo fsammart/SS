@@ -19,10 +19,6 @@ public class ParticleCollision extends Event{
      */
     @Override
     public void  execute() {
-
-        p1.moveParticle(time);
-        p2.moveParticle(time);
-
         final double sigma = p1.radius + p2.radius;
         final double[] deltaR = {
                 p2.x - p1.x,

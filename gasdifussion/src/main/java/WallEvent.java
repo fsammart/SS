@@ -14,7 +14,6 @@ public class WallEvent extends Event{
 
     @Override
     public void execute() {
-        particle.moveParticle(time);
         if(wall == Wall.VERTICAL || wall == Wall.MIDDLE_VERTICAL) {
             particle.vx = particle.vx * (-1);
         } else if (wall == Wall.HORIZONTAL) {
