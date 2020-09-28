@@ -11,7 +11,6 @@ public class Analysis {
         Main.equilibriumReached = false;
         Main.systemTime = 0;
         Main.iteration = 0;
-        Main.lastFps = new LinkedList<>();
 
         CliParser.L = 0.09;
         CliParser.W = 0.24;
@@ -37,36 +36,44 @@ public class Analysis {
         Wall.MIDDLE_VERTICAL.setLength((CliParser.L - CliParser.g)/2.0);
 
 
-        Main.name = "groove_stats2.tsv";
+
         generateEquilibriumTimeFileHeader();
-        for(double a = 0.01; a < 0.09; a+= 0.01){
-            CliParser.g = a;
-            for(int i=1; i<= 5; i++) {
-                Main.systemTime = 0;
-                Main.lastFps = new LinkedList<>();
-                Main.iteration = 0;
-                List<Particle> particles = GRandom.
-                        getRandomParticles(CliParser.N,CliParser.L,CliParser.radius,
-                                CliParser.m, CliParser.v, CliParser.W);
-                Main.witnesses = new TreeMap<>();
-                particles.forEach(point -> Main.witnesses.put(point.id, point));
+        for(int size = 50; size <= 150; size+=50) {
+            CliParser.N = size;
+            List<Double> values = List.of(0.01,0.04,0.08);
 
-                Main.gasDiffusion = new GasDiffusion2D(CliParser.L, CliParser.W, CliParser.g, particles);
+            for (Double a: values) {
+                CliParser.g = a;
+                    Main.name = size + "groove_stats" + ((int)Math.floor(a*100)) + ".tsv";
+                    Main.systemTime = 0;
+                    Main.iteration = 0;
+                    List<Particle> particles = GRandom.
+                            getRandomParticles(CliParser.N, CliParser.L, CliParser.radius,
+                                    CliParser.m, CliParser.v, CliParser.W);
+                    Main.witnesses = new TreeMap<>();
+                    particles.forEach(point -> Main.witnesses.put(point.id, point));
 
-                Main.runGasDiffusion(particles, false);
+                    Main.gasDiffusion = new GasDiffusion2D(CliParser.L, CliParser.W, CliParser.g, particles);
 
-                int eqIteration = Main.iteration;
-                double eqSystemTime = Main.systemTime;
-                Main.gasDiffusion.totalPressure += Main.gasDiffusion.currentPressure;
-                Main.gasDiffusion.currentPressure = 0;
-                Main.equilibriumReached = true;
+                    Main.runGasDiffusion(particles, false);
 
-                Main.runGasDiffusion(particles, true);
+                    toStep(1, Main.name);
+
+                    int eqIteration = Main.iteration;
+                    double eqSystemTime = Main.systemTime;
+                    /**
+                    Main.gasDiffusion.totalPressure += Main.gasDiffusion.currentPressure;
+                    Main.gasDiffusion.currentPressure = 0;
+                    Main.equilibriumReached = true;
+
+                    Main.runGasDiffusion(particles, true);
+                     **/
 
 
-                generateEquilibriumTimeFile(eqIteration, eqSystemTime, Main.systemTime - eqSystemTime);
+                    //generateEquilibriumTimeFile(eqIteration, eqSystemTime, Main.systemTime - eqSystemTime);
 
-                //toStep(0.1, Main.name);
+                    //toStep(0.1, Main.name);
+
             }
         }
 

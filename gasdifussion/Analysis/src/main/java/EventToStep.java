@@ -43,12 +43,17 @@ public class EventToStep {
                 double time = sc.nextDouble();
                 boolean write = false;
                 if(time >= currentTime) {
-                    currentTime += dt;
+                    if(currentTime == 0){
+                        currentTime = time + dt;
+                    }else {
+                        currentTime += dt;
+                    }
                     write = true;
                     final StringBuilder sb = new StringBuilder();
                     final StringBuilder sb1 = new StringBuilder();
                     int realNumber = numberOfParticles + drawSquare(sb, radiusSquare);
                     sb1.append(realNumber).append('\n');
+
                     sb1.append(time).append('\n');
                     writer.write(sb1.toString());
                     writer.write(sb.toString());

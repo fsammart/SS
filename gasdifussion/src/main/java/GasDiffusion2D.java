@@ -56,7 +56,7 @@ public class GasDiffusion2D {
             event.execute();
 
             if(event instanceof WallEvent && equilibriumReached) {
-                Main.witnesses.remove(((WallEvent)event).particle.id);
+                //Main.witnesses.remove(((WallEvent)event).particle.id);
             }
 
             // Get the event's resulting currentPressure
@@ -84,10 +84,11 @@ public class GasDiffusion2D {
                 final Particle pointToCompare = points.get(j);
 
                 tc = Equations.collisionTime(point, pointToCompare);
-                if(eventList.isEmpty() || tc < eventList.get(0).time) {
+
+                if(!Double.isInfinite(tc) &&(eventList.isEmpty() || tc < eventList.get(0).time)) {
                     eventList.clear();
                     eventList.add(new ParticleCollision(tc, point, pointToCompare));
-                } else if(!eventList.isEmpty() && Double.compare( tc , eventList.get(0).time) == 0){
+                } else if(!Double.isInfinite(tc) && !eventList.isEmpty() && Double.compare( tc , eventList.get(0).time) == 0){
                     eventList.add(new ParticleCollision(tc, point, pointToCompare));
                 }
             }
@@ -95,10 +96,10 @@ public class GasDiffusion2D {
             // Calculate the collision between the given point and one of the horizontal walls
             tc = Equations.timeToHitWall(point, Wall.HORIZONTAL, 0, L);
 
-            if(eventList.isEmpty() || tc < eventList.get(0).time) {
+            if(!Double.isInfinite(tc) &&(eventList.isEmpty() || tc < eventList.get(0).time)) {
                 eventList.clear();
                 eventList.add( new WallEvent(tc, point, Wall.HORIZONTAL));
-            } else if(!eventList.isEmpty() && Double.compare( tc , eventList.get(0).time) == 0){
+            } else if(!Double.isInfinite(tc) && !eventList.isEmpty() && Double.compare( tc , eventList.get(0).time) == 0){
                 eventList.add( new WallEvent(tc, point, Wall.HORIZONTAL));
             }
 
@@ -106,10 +107,10 @@ public class GasDiffusion2D {
             // Calculate the collision between the given point and one of the vertical walls
             tc = Equations.timeToHitWall(point, Wall.VERTICAL, 0, W);
 
-            if(eventList.isEmpty() || tc < eventList.get(0).time) {
+            if(!Double.isInfinite(tc) &&(eventList.isEmpty() || tc < eventList.get(0).time)) {
                 eventList.clear();
                 eventList.add( new WallEvent(tc, point, Wall.VERTICAL));
-            } else if(!eventList.isEmpty() && Double.compare( tc , eventList.get(0).time) == 0){
+            } else if(!Double.isInfinite(tc) && !eventList.isEmpty() && Double.compare( tc , eventList.get(0).time) == 0){
                 eventList.add( new WallEvent(tc, point, Wall.VERTICAL));
             }
 
@@ -117,10 +118,10 @@ public class GasDiffusion2D {
             tc = Equations.timeToHitMiddleWall(
                     point, W / 2, L, groove);
 
-            if(eventList.isEmpty() || tc < eventList.get(0).time) {
+            if(!Double.isInfinite(tc) &&(eventList.isEmpty() || tc < eventList.get(0).time)) {
                 eventList.clear();
                 eventList.add( new WallEvent(tc, point, Wall.MIDDLE_VERTICAL));
-            } else if(!eventList.isEmpty() && Double.compare( tc , eventList.get(0).time) == 0){
+            } else if(!Double.isInfinite(tc) && !eventList.isEmpty() && Double.compare( tc , eventList.get(0).time) == 0){
                 eventList.add( new WallEvent(tc, point, Wall.MIDDLE_VERTICAL));
             }
 

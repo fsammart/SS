@@ -14,7 +14,6 @@ public class Main {
     public static final int KINETIC_ENERGY_INDEX = 1;
     public static double MAX_TIME_AFTER_EQUILIBRIUM = 100;
 
-    public static Queue<Double> lastFps;
     public static double  systemTime;
     public static int iteration;
     public static Map<Integer, Particle> witnesses;
@@ -27,7 +26,6 @@ public class Main {
         equilibriumReached = false;
         systemTime = 0;
         iteration = 0;
-        lastFps = new LinkedList<>();
         CliParser.dynamicOutput = true;
 
         name = String.valueOf(System.currentTimeMillis());
@@ -53,7 +51,9 @@ public class Main {
         double eqSystemTime = systemTime;
         gasDiffusion.totalPressure += gasDiffusion.currentPressure;
         gasDiffusion.currentPressure = 0;
+        gasDiffusion.equilibriumReached = true;
         equilibriumReached = true;
+        CliParser.dynamicOutput = true;
         runGasDiffusion( particles, true);
 
         generateOutputDataFile(eqIteration, eqSystemTime, systemTime - eqSystemTime);
@@ -65,8 +65,6 @@ public class Main {
         double tc;
         double timeAfterEquilibrium = 0;
         double delta;
-        int lastFpsSize = 100;
-        double deltaForEquilibrium = 0.02;
 
         do {
             gasDiffusion.run(points);
@@ -82,7 +80,7 @@ public class Main {
 
             systemTime += tc;
 
-            //generateOutputDataFile(iteration, systemTime); // save to file the current configuration
+            generateOutputDataFile(iteration, systemTime); // save to file the current configuration
             iteration++;
             gasDiffusion.totalPressure += gasDiffusion.currentPressure;
             gasDiffusion.currentPressure = 0;
@@ -91,27 +89,12 @@ public class Main {
             if(equilibriumReached)
                 timeAfterEquilibrium += tc;
 
-            /** Uses last 100 values for average*/
-            if(lastFps.size() >= lastFpsSize)
-                lastFps.poll();
-
-             lastFps.add(gasDiffusion.rightSideFraction);
-
-            OptionalDouble average = lastFps.stream().mapToDouble(x -> x).average();
-
-            delta = Math.abs(0.5 - average.getAsDouble());
-
-        } while (!equilibriumReached ? delta >= deltaForEquilibrium : timeAfterEquilibrium < MAX_TIME_AFTER_EQUILIBRIUM);
+        } while (!equilibriumReached ? gasDiffusion.rightSideFraction < 0.5 : timeAfterEquilibrium < MAX_TIME_AFTER_EQUILIBRIUM);
 
         return points;
     }
 
 
-    /**
-     * Format:  ID X Y Vx Vy R G B
-     * @param iteration the iteration number
-     * @param realTime real time of the simulation (iteration number * dt2)
-     */
     public static void generateOutputDataFile(
                                               final int iteration,
                                               final double realTime) throws IOException {
@@ -227,7 +210,7 @@ public class Main {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
             StringBuilder squareSb = new StringBuilder();
 
-            int numberOfParticles = CliParser.N;
+            int numberOfParticles = witnesses.size();
             writer.write(String.valueOf(numberOfParticles));
             writer.write("\n");
 

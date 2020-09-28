@@ -100,6 +100,7 @@ public class Equations {
             }
         }
 
+
         // check what happens at the new y position
         newY = particle.y + particle.vy * tc;
         openingUpperLimit = (wallHeight/2) + opening/2;

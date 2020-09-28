@@ -24,6 +24,7 @@ public class WallEvent extends Event{
     @Override
     public double getPressure() {
         if (wall.getLength() > 0) {
+            // TODO: solo colisiones con una pared en particular.
             if(wall == Wall.HORIZONTAL)
                 return 2 * particle.mass * Math.abs(particle.vy) / wall.getLength();
             else
