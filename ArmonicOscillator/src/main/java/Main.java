@@ -1,6 +1,9 @@
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Main {
@@ -10,13 +13,16 @@ public class Main {
     private static double A = 1.0;
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         CliParser.parseOptions(args);
+        run(false);
+
+    }
+    public static void run(boolean analytic) throws IOException {
         dt = CliParser.base * Math.pow(10, -CliParser.exp);
 
-        Oscillator os = new Oscillator(dt,m,k,y,c,A);
+        Oscillator os = new Oscillator(dt, m, k, y, c, A);
         os.initialize();
-
 
         int stepCount = 0;
 
@@ -48,7 +54,6 @@ public class Main {
                     break;
             }
 
-
             double pos = os.position(os.t);
 
             double error = os.r - pos;
@@ -58,26 +63,72 @@ public class Main {
             positions.add(os.r);
             analyticPositions.add(pos);
             errors.add(error_sq);
-            errorsNormalized.add(error_sq / stepCount);
         }
 
-        printList(times, CliParser.outputDirectory + "/" + CliParser.base + "e" + CliParser.exp + "_" + CliParser.algorithm + "_times.csv");
-        printList(positions, CliParser.outputDirectory + "/"  + CliParser.base + "e" + CliParser.exp + "_" + CliParser.algorithm + "_positions.csv");
-        printList(analyticPositions, CliParser.outputDirectory + "/" + CliParser.base + "e" + CliParser.exp + "_" + CliParser.algorithm + "_analyticPositions.csv");
-        printList(errors, CliParser.outputDirectory + "/"  + CliParser.base + "e" + CliParser.exp + "_" + CliParser.algorithm + "_errors.csv");
-        printList(errorsNormalized, CliParser.outputDirectory + "/"  + CliParser.base + "e" + CliParser.exp + "_" + CliParser.algorithm + "_errorsNormalized.csv");
+
+        if(analytic){
+            printRealPositions(times, analyticPositions, CliParser.outputDirectory + "/evolution.tsv");
+        } else {
+            printPositions(times, positions, CliParser.outputDirectory + "/evolution.tsv");
+            printErrors(times, errors, CliParser.outputDirectory + "/errors.tsv");
+        }
+
     }
 
-    private static void printList(List<Double> list, String filename) {
+    private static void printRealPositions(List<Double> times,
+                                       List<Double> positions, String filename) throws IOException {
         File file = new File(filename);
         file.getParentFile().mkdirs();
+        FileWriter fr = new FileWriter(file, true);
 
-        try (PrintWriter writer = new PrintWriter(file)) {
-            for (double d : list) {
-                writer.println(d);
+        try (PrintWriter writer = new PrintWriter(fr)) {
+            //writer.println("algorithm" + "\t" + "exponent" + "\t" + "time" + "\t" + "position" );
+            for(int i = 0; i < times.size(); i++){
+                writer.println("Analytic" + "\t" + CliParser.exp + "\t" + times.get(i) + "\t" + positions.get(i));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
+
+
+
+    private static void printPositions(List<Double> times,
+                                       List<Double> positions, String filename) throws IOException {
+        File file = new File(filename);
+        file.getParentFile().mkdirs();
+        FileWriter fr = new FileWriter(file, true);
+
+        try (PrintWriter writer = new PrintWriter(fr)) {
+            //writer.println("algorithm" + "\t" + "exponent" + "\t" + "error" );
+            // TODO: change step
+            for(int i = 0; i < times.size(); i++){
+                writer.println(CliParser.algorithm + "\t" + CliParser.exp + "\t" + times.get(i) + "\t" +positions.get(i));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private static void printErrors(List<Double> times,
+                                       List<Double> errors, String filename) throws IOException {
+        File file = new File(filename);
+        file.getParentFile().mkdirs();
+        FileWriter fr = new FileWriter(file, true);
+
+        try (PrintWriter writer = new PrintWriter(fr)) {
+            //writer.println("algorithm" + "\t" + "exponent" + "\t" + "time" + "\t" + "error" + "\t" + "error_norm");
+
+                writer.println(CliParser.algorithm + "\t" + CliParser.exp + "\t" + errors.stream()
+                        .mapToDouble(x->x).average().getAsDouble() );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
 }

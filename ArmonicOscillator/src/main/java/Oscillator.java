@@ -2,7 +2,7 @@
 
 public class Oscillator {
     public double dt;
-    public double r, v, t, prev_r, prev_v, prev_a;
+    public double r, v, t, prev_r, prev_v, prev_a,r2,r3,r4,r5;
     public double c , m , k, y ;
     public double A ;
 
@@ -20,6 +20,10 @@ public class Oscillator {
         t = 0.0;
         r = ri;
         v = vi;
+        r2 = derivative(r, v);
+        r3 =  derivative(v, r2);
+        r4 = derivative(r2, r3);
+        r5 = derivative(r4, r5);
         prev_r = ri - dt * vi + 2 * dt * dt * Oscillator.derivative(r, v,k,y,m);
         prev_v = vi - dt * Oscillator.derivative(r, v,k,y,m);
         prev_a = Oscillator.derivative(prev_r, prev_v,k,y,m);
@@ -46,10 +50,6 @@ public class Oscillator {
     public void executeTimestepGear() {
         double r0 = r;
         double r1 = v;
-        double r2 = derivative(r0 - c, r1);
-        double r3 = derivative(r1, r2);
-        double r4 = derivative(r2, r3);
-        double r5 = derivative(r3, r4);
 
         double dt2 = Math.pow(dt, 2), dt3 = Math.pow(dt, 3), dt4 = Math.pow(dt, 4), dt5 = Math.pow(dt, 5);
 
@@ -63,10 +63,19 @@ public class Oscillator {
         double dr2 = (derivative(r0p - c, r1p) - r2p) * dt2 / 2;
 
         double r0c = r0p + a0 * dr2;
-        double r1c = r1p + a1 * dr2;
+        double r1c = r1p + a1 * dr2/dt;
+        double r2c = r2p + a2 * 2 *dr2/dt2;
+        double r3c = r3p + a3 * 6 * dr2/dt3;
+        double r4c = r4p + a4 * 24 * dr2/dt4;
+        double r5c = r5p + a5 * 120 * dr2/dt5;
+
 
         r = r0c;
         v = r1c;
+        r2=r2c;
+        r3=r3c;
+        r4=r4c;
+        r5=r5c;
     }
 
     public void executeTimestepVerlet() {
