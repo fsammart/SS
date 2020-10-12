@@ -14,7 +14,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         CliParser.parseOptions(args);
         int day;
-        for(day=0; day <= 800; day+=1){
+        for(day=0; day <= 3*365; day+=1){
             run(day);
         }
         //run();
@@ -42,14 +42,14 @@ public class Main {
         int launch_day = day*24*60*60;
         while (t < launch_day+tf) {
            t += dt;
-           if(!launched && t >= day*24*60*60){
+           if(!launched && t >= launch_day){
                launch(particles);
                launched = true;
                System.out.println("Launched on day " + day);
            }
             if(launched){
                 double current_distance = distanceToMars(particles);
-                //System.out.println("MIN " + min_distance + "- Current " +current_distance);
+                // System.out.println("MIN " + min_distance + "- Current " +current_distance);
                 if (current_distance < min_distance){
                     min_distance = current_distance;
                 }
@@ -70,17 +70,23 @@ public class Main {
 
         double earth_mass =5.97219e24; //kg
         double earth_radius=6378.137 * 1000; // to meters
+        // 1/1/20
+        // X =-2.488497169862896E+07 Y = 1.449783471212823E+08 Z =-6.171784579284489E+03
+        // VX=-2.984892046591452E+01 VY=-5.162374739569864E+00 VZ= 7.366656604983479E-04
         double earth_position_x = -2.488497169862896e+07 * 1000;
         double earth_position_y = 1.449783471212823e+08 * 1000;
-        double earth_velocity_x = 2.328688878608865e+01 * 1000;
-        double earth_velocity_y = 1.782952288872059e+01 * 1000;
+        double earth_velocity_x = -2.984892046591452e+01 * 1000;
+        double earth_velocity_y = -5.162374739569864e+00 * 1000;
 
         double mars_mass =6.4171e23; //kg
         double mars_radius=3389.92 * 1000; // to meters
-        double mars_position_x = 1.845926818453264e+08 * 1000;
-        double mars_position_y = -9.272024311856113e+07 * 1000;
-        double mars_velocity_x = 1.180038069484242e+01 * 1000;
-        double mars_velocity_y = 2.372295882384511e+01 * 1000;
+        // 1/1/20
+        // X =-1.974852867957307E+08 Y =-1.325074306424199E+08 Z = 2.068800267463274E+06
+        // VX= 1.440720082952704E+01 VY=-1.804659323598330E+01 VZ=-7.316474588259982E-01
+        double mars_position_x = -1.974852867957307e+08 * 1000;
+        double mars_position_y = -1.325074306424199e+08 * 1000;
+        double mars_velocity_x = 1.440720082952704e+01 * 1000;
+        double mars_velocity_y = -1.804659323598330e+01 * 1000;
 
         Particle sun = setUpParticle(sun_mass, sun_radius, sun_position_x, sun_position_y, sun_velocity_x, sun_velocity_y, "SUN");
         Particle earth = setUpParticle(earth_mass, earth_radius, earth_position_x, earth_position_y, earth_velocity_x, earth_velocity_y, "EARTH");
@@ -197,7 +203,8 @@ public class Main {
         FileWriter fr = new FileWriter(file, true);
 
         try (PrintWriter writer = new PrintWriter(fr)) {
-            writer.println( day + "\t" + distance + "\t" );
+            writer.println( day + "\t" + distance);
+            System.out.println(day + " - " + distance);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -209,6 +216,6 @@ public class Main {
 
         double dx = spaceship.rx.get(0) - mars.rx.get(0);
         double dy = spaceship.ry.get(0) - mars.ry.get(0);
-        return Math.pow(dx, 2) + Math.pow(dy, 2);
+        return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
     }
 }
