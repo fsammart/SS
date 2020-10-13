@@ -14,16 +14,58 @@ public class Main {
     public static void main(String[] args) throws IOException {
         CliParser.parseOptions(args);
         int day;
-        for(day=0; day <= 3*365; day+=1){
-            run(day);
+        double prevDistance = -1;
+        boolean analyzed = false;
+        for(day=0; day <= 1*365; day+=1){
+            double distance = run(day);
+            if(prevDistance == -1){
+                prevDistance = distance;
+            }
+            if(!analyzed && prevDistance < distance){
+                // we are growing
+                analyzeHour(day-2);
+                analyzed = true;
+            }
+            prevDistance = distance;
+
         }
         //run();
 //        for(dt=0.1; dt <= 5; dt+=10){
 //            run(dt);
 //        }
+
     }
 
-    public static void run(int day) throws IOException {
+    public static void analyzeHour(int day) throws IOException {
+        double prevDistance = -1;
+        boolean analyzed = false;
+        for(int d = day; d < day + 2; d++){
+            for(int sec =0; sec < 60*60*24; sec += 60*60){
+                double distance = runHour(d, sec);
+                if(prevDistance == -1){
+                    prevDistance = distance;
+                }
+                if(!analyzed && prevDistance < distance){
+                    // we are growing
+                    analyzeSecs(d, sec - 2*60*60);
+                    analyzed = true;
+                }
+                prevDistance = distance;
+            }
+        }
+    }
+
+    public static void analyzeSecs(int day, int secs) throws IOException {
+
+        for(int sec =secs; sec < secs + 2*60*60; sec += 60){
+            runHour(day, sec);
+        }
+
+    }
+
+
+
+    public static double run(int day) throws IOException {
         dt = CliParser.dt;
         List<Particle> particles = new ArrayList<>(5);
         setUpSolarSystem(particles);
@@ -58,6 +100,45 @@ public class Main {
         }
         //printSolarSystem(t, particles, name);
         printSpaceshipDistanceToMars(day, name, min_distance);
+        return min_distance;
+    }
+
+    public static double runHour(int day, int secs) throws IOException {
+        dt = CliParser.dt;
+        List<Particle> particles = new ArrayList<>(5);
+        setUpSolarSystem(particles);
+
+        AlgorithmEngine os = new AlgorithmEngine(dt, particles);
+
+        List<Double> times = new ArrayList<>((int) (tf / dt));
+        double t = 0;
+
+        times.add(t);
+
+        String name = "dynamic/dtmh.csv";// + System.currentTimeMillis();
+
+        boolean launched = false;
+        double min_distance = Double.MAX_VALUE;
+        int launch_day = day*24*60*60 + secs;
+        while (t < launch_day+tf) {
+            t += dt;
+            if(!launched && t >= launch_day){
+                launch(particles);
+                launched = true;
+                System.out.println("Launched on day " + day + "and secs" + secs);
+            }
+            if(launched){
+                double current_distance = distanceToMars(particles);
+                // System.out.println("MIN " + min_distance + "- Current " +current_distance);
+                if (current_distance < min_distance){
+                    min_distance = current_distance;
+                }
+            }
+            os.executeTimestepGear();
+        }
+        //printSolarSystem(t, particles, name);
+        printSpaceshipDistanceToMarsHourly(day,secs, name, min_distance);
+        return min_distance;
     }
 
     private static void setUpSolarSystem(List<Particle> particles){
@@ -209,6 +290,21 @@ public class Main {
             e.printStackTrace();
         }
     }
+
+    private static void printSpaceshipDistanceToMarsHourly(int day,int secs, String filename, double distance) throws IOException {
+        File file = new File(filename);
+        file.getParentFile().mkdirs();
+        FileWriter fr = new FileWriter(file, true);
+
+        try (PrintWriter writer = new PrintWriter(fr)) {
+            writer.println( day + "\t" + secs + "\t" + distance);
+            System.out.println(day + " - " + secs + "-" + distance);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     private static double distanceToMars(List<Particle> particles){
         Particle spaceship = particles.get(3);
