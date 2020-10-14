@@ -9,15 +9,29 @@ import java.util.List;
 public class Main {
 
     private static double dt;
-    private static double tf = 60 * 60 * 24 * 365;
+    private static double tf = 60 * 60 * 24 * 365 * 3;
 
     public static void main(String[] args) throws IOException {
         CliParser.parseOptions(args);
+
+        runHour(179, 37620);
+        //run();
+//        for(dt=0.1; dt <= 5; dt+=10){
+//            run(dt);
+//        }
+
+    }
+
+    public static void main2(String[] args) throws IOException {
+        CliParser.parseOptions(args);
         int day;
         double prevDistance = -1;
-        boolean analyzed = false;
-        for(day=0; day <= 1*365; day+=1){
+        boolean analyzed = true;
+        for(day=0; day <= 3*365; day+=1){
             double distance = run(day);
+            if(distance <= 0){
+                distance =0;
+            }
             if(prevDistance == -1){
                 prevDistance = distance;
             }
@@ -42,6 +56,9 @@ public class Main {
         for(int d = day; d < day + 2; d++){
             for(int sec =0; sec < 60*60*24; sec += 60*60){
                 double distance = runHour(d, sec);
+                if(distance <= 0){
+                    distance =0;
+                }
                 if(prevDistance == -1){
                     prevDistance = distance;
                 }
@@ -92,9 +109,14 @@ public class Main {
             if(launched){
                 double current_distance = distanceToMars(particles);
                 // System.out.println("MIN " + min_distance + "- Current " +current_distance);
-                if (current_distance < min_distance){
+                if(current_distance <=0){
+                    min_distance = 0;
+                    break;
+                }
+                if (current_distance >=0 && current_distance < min_distance){
                     min_distance = current_distance;
                 }
+
             }
            os.executeTimestepGear();
         }
@@ -121,6 +143,9 @@ public class Main {
         double min_distance = Double.MAX_VALUE;
         int launch_day = day*24*60*60 + secs;
         while (t < launch_day+tf) {
+            if(t%CliParser.dt2 ==0) {
+                printSolarSystem(t, particles, "dynamic/resultsXYZ");
+            }
             t += dt;
             if(!launched && t >= launch_day){
                 launch(particles);
@@ -130,13 +155,17 @@ public class Main {
             if(launched){
                 double current_distance = distanceToMars(particles);
                 // System.out.println("MIN " + min_distance + "- Current " +current_distance);
+                if(current_distance <=0){
+                    min_distance = 0;
+                    break;
+                }
                 if (current_distance < min_distance){
                     min_distance = current_distance;
                 }
             }
             os.executeTimestepGear();
         }
-        //printSolarSystem(t, particles, name);
+
         printSpaceshipDistanceToMarsHourly(day,secs, name, min_distance);
         return min_distance;
     }
@@ -210,8 +239,8 @@ public class Main {
         Particle spaceship = particles.get(3);
         double angle1 = sun.angle(earth);
         double angle2 = angle1 +  Math.PI/2;
-        //double v0 = 8 * 1000;
-        double v0 = 5 * 1000;
+        double v0 = 8 * 1000;
+        //double v0 = 5 * 1000;
 
         double vx = spaceship.rx.get(1) + v0*Math.cos(angle2);
         double vy = spaceship.ry.get(1) + v0*Math.sin(angle2);
@@ -252,7 +281,14 @@ public class Main {
             writer.println(particles.size());
             writer.println(t);
             for(Particle p: particles){
-                writer.println( i++ + "\t" + p.rx.get(0)/1e8 + "\t" + p.ry.get(0)/1e8 + "\t"  + p.radius/10000);
+                double radius = p.radius;
+                if(i==0){
+                    radius /= 50;
+                }
+                if(i==3){
+                    radius *= 100;
+                }
+                writer.println( i++ + "\t" + p.rx.get(0) + "\t" + p.ry.get(0) + "\t"  + radius);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -312,6 +348,6 @@ public class Main {
 
         double dx = spaceship.rx.get(0) - mars.rx.get(0);
         double dy = spaceship.ry.get(0) - mars.ry.get(0);
-        return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+        return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2)) - mars.radius;
     }
 }

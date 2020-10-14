@@ -8,12 +8,14 @@ public class CliParser {
 
 
     public static double dt;
+    public static double dt2;
 
 
     private static Options createOptions(){
         Options options = new Options();
         options.addOption("h", "help", false, "Shows help description.");
-        options.addOption("dt", "base", true, "dt.");
+        options.addOption("dt", "dt", true, "dt.");
+        options.addOption("dt2", "dt2", true, "print dt.");
         options.addOption("od", "output_directory", true, "Path to output directory.");
 
         return options;
@@ -42,6 +44,13 @@ public class CliParser {
             }
 
             dt = Double.parseDouble(cmd.getOptionValue("dt"));
+
+            if (!cmd.hasOption("dt2")){
+                System.out.println("dt is required");
+                System.exit(1);
+            }
+
+            dt2 = Double.parseDouble(cmd.getOptionValue("dt2"));
 
         } catch (Exception e){
             e.printStackTrace();
