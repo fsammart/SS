@@ -9,25 +9,30 @@ import java.util.List;
 public class Main {
 
     private static double dt;
-    private static double tf = 60 * 60 * 24 * 365 * 3;
+    private static double tf = 60 * 60 * 24 * 365;
+
 
     public static void main(String[] args) throws IOException {
         CliParser.parseOptions(args);
 
-        runHour(179, 37620);
+        runHour(192, 15000, "dynamic/evolution.csv");
         //run();
-//        for(dt=0.1; dt <= 5; dt+=10){
-//            run(dt);
+//        int day;
+//        for(day=0; day <= 3*365; day+=1){
+//            run(day);
 //        }
-
+//        runDT(1);
+//        for(dt=10; dt <= 20000; dt+=10){
+//            runDT(dt);
+//        }
     }
 
     public static void main2(String[] args) throws IOException {
         CliParser.parseOptions(args);
         int day;
         double prevDistance = -1;
-        boolean analyzed = true;
-        for(day=0; day <= 3*365; day+=1){
+        boolean analyzed = false;
+        for(day=120; day <= 9*30; day+=1){
             double distance = run(day);
             if(distance <= 0){
                 distance =0;
@@ -37,7 +42,7 @@ public class Main {
             }
             if(!analyzed && prevDistance < distance){
                 // we are growing
-                analyzeHour(day-2);
+//                analyzeHour(day-2);
                 analyzed = true;
             }
             prevDistance = distance;
@@ -51,11 +56,12 @@ public class Main {
     }
 
     public static void analyzeHour(int day) throws IOException {
+        String name = "dynamic/dtm_hour.csv";
         double prevDistance = -1;
         boolean analyzed = false;
         for(int d = day; d < day + 2; d++){
             for(int sec =0; sec < 60*60*24; sec += 60*60){
-                double distance = runHour(d, sec);
+                double distance = runHour(d, sec, name);
                 if(distance <= 0){
                     distance =0;
                 }
@@ -73,14 +79,12 @@ public class Main {
     }
 
     public static void analyzeSecs(int day, int secs) throws IOException {
-
-        for(int sec =secs; sec < secs + 2*60*60; sec += 60){
-            runHour(day, sec);
+        String name = "dynamic/dtm_seconds.csv";
+        for(int sec =secs; sec < secs + 2*60*60; sec += 30){
+            runHour(day, sec, name);
         }
 
     }
-
-
 
     public static double run(int day) throws IOException {
         dt = CliParser.dt;
@@ -94,18 +98,19 @@ public class Main {
 
         times.add(t);
 
-        String name = "dynamic/dtm.csv";// + System.currentTimeMillis();
+        String name = "dynamic/evolution.csv";// + System.currentTimeMillis();
 
         boolean launched = false;
         double min_distance = Double.MAX_VALUE;
+        double min_time;
         int launch_day = day*24*60*60;
         while (t < launch_day+tf) {
-           t += dt;
-           if(!launched && t >= launch_day){
-               launch(particles);
-               launched = true;
-               System.out.println("Launched on day " + day);
-           }
+            t += dt;
+            if(!launched && t >= launch_day){
+                launch(particles);
+                launched = true;
+                System.out.println("Launched on day " + day);
+            }
             if(launched){
                 double current_distance = distanceToMars(particles);
                 // System.out.println("MIN " + min_distance + "- Current " +current_distance);
@@ -115,18 +120,23 @@ public class Main {
                 }
                 if (current_distance >=0 && current_distance < min_distance){
                     min_distance = current_distance;
+                    min_time = t;
                 }
 
             }
-           os.executeTimestepGear();
+            os.executeTimestepGear();
         }
         //printSolarSystem(t, particles, name);
-        printSpaceshipDistanceToMars(day, name, min_distance);
+        //printSpaceshipDistanceToMars(day, name, min_distance, t, particles);
         return min_distance;
     }
 
-    public static double runHour(int day, int secs) throws IOException {
-        dt = CliParser.dt;
+    public static void runDT(double dt) throws IOException {
+        if(tf % dt !=0){
+            System.out.println("Dt not valid -" + dt);
+            return;
+        }
+
         List<Particle> particles = new ArrayList<>(5);
         setUpSolarSystem(particles);
 
@@ -137,15 +147,39 @@ public class Main {
 
         times.add(t);
 
-        String name = "dynamic/dtmh.csv";// + System.currentTimeMillis();
+        String name = "dynamic/position_dt.csv";// + System.currentTimeMillis();
+
+        boolean launched = false;
+        double min_distance = Double.MAX_VALUE;
+        while (t < tf) {
+            t += dt;
+            os.executeTimestepGear();
+        }
+        printSolarSystemRelativeToSun(t, particles, name);
+    }
+
+    public static double runHour(int day, int secs, String name) throws IOException {
+        dt = CliParser.dt;
+        List<Particle> particles = new ArrayList<>(6);
+        setUpSolarSystem(particles);
+
+        AlgorithmEngine os = new AlgorithmEngine(dt, particles);
+
+        List<Double> times = new ArrayList<>((int) (tf / dt));
+        double t = 0;
+
+        times.add(t);
+
+//        String name = "dynamic/dtmh.csv";// + System.currentTimeMillis();
 
         boolean launched = false;
         double min_distance = Double.MAX_VALUE;
         int launch_day = day*24*60*60 + secs;
+        double min_time = 0.0;
         while (t < launch_day+tf) {
-            if(t%CliParser.dt2 ==0) {
-                printSolarSystem(t, particles, "dynamic/resultsXYZ");
-            }
+//            if(t%CliParser.dt2 ==0) {
+//                printSolarSystem(t, particles, "dynamic/resultsXYZ");
+//            }
             t += dt;
             if(!launched && t >= launch_day){
                 launch(particles);
@@ -157,16 +191,19 @@ public class Main {
                 // System.out.println("MIN " + min_distance + "- Current " +current_distance);
                 if(current_distance <=0){
                     min_distance = 0;
+                    printSpaceshipDistanceToMarsHourly(day,secs, name, min_distance, min_time, particles);
                     break;
                 }
                 if (current_distance < min_distance){
                     min_distance = current_distance;
+                    min_time = t;
                 }
+                printSpaceshipDistanceToMarsHourly(day,secs, name, min_distance, min_time, particles);
             }
             os.executeTimestepGear();
         }
 
-        printSpaceshipDistanceToMarsHourly(day,secs, name, min_distance);
+        //printSpaceshipDistanceToMarsHourly(day,secs, name, min_distance, min_time, particles);
         return min_distance;
     }
 
@@ -198,12 +235,25 @@ public class Main {
         double mars_velocity_x = 1.440720082952704e+01 * 1000;
         double mars_velocity_y = -1.804659323598330e+01 * 1000;
 
+        double moon_mass =7.348e22; //kg
+        double moon_radius=1737.5 * 1000; // to meters
+        // 1/1/20
+//        X =-2.449478606006278E+07 Y = 1.448800063584762E+08 Z =-4.062144616185874E+04
+//        VX=-2.960019274200946E+01 VY=-4.226637542798546E+00 VZ=-3.430462726334782E-02
+        double moon_position_x = -2.449478606006278e+07 * 1000;
+        double moon_position_y = 1.448800063584762e+08 * 1000;
+        double moon_velocity_x = -2.960019274200946e+01 * 1000;
+        double moon_velocity_y = -4.226637542798546e+00 * 1000;
+
+
         Particle sun = setUpParticle(sun_mass, sun_radius, sun_position_x, sun_position_y, sun_velocity_x, sun_velocity_y, "SUN");
         Particle earth = setUpParticle(earth_mass, earth_radius, earth_position_x, earth_position_y, earth_velocity_x, earth_velocity_y, "EARTH");
         Particle mars = setUpParticle(mars_mass, mars_radius, mars_position_x, mars_position_y, mars_velocity_x, mars_velocity_y, "MARS");
+        Particle moon = setUpParticle(moon_mass, moon_radius, moon_position_x, moon_position_y, moon_velocity_x, moon_velocity_y, "MOON");
         particles.add(sun);
         particles.add(earth);
         particles.add(mars);
+        //particles.add(moon);
     }
 
     private static Particle setUpParticle(double mass, double radius, double position_x, double position_y, double velocity_x, double velocity_y, String name){
@@ -314,7 +364,7 @@ public class Main {
         }
     }
 
-    private static void printSpaceshipDistanceToMars(int day, String filename, double distance) throws IOException {
+    private static void printSpaceshipDistanceToMars(int day, String filename, double distance ) throws IOException {
         File file = new File(filename);
         file.getParentFile().mkdirs();
         FileWriter fr = new FileWriter(file, true);
@@ -327,20 +377,22 @@ public class Main {
         }
     }
 
-    private static void printSpaceshipDistanceToMarsHourly(int day,int secs, String filename, double distance) throws IOException {
+    private static void printSpaceshipDistanceToMarsHourly(int day,int secs, String filename, double distance, double time, List<Particle> particles ) throws IOException {
         File file = new File(filename);
         file.getParentFile().mkdirs();
         FileWriter fr = new FileWriter(file, true);
+        Particle spaceship = particles.get(3);
+
+        double vx = spaceship.rx.get(1);
+        double vy = spaceship.ry.get(1);
 
         try (PrintWriter writer = new PrintWriter(fr)) {
-            writer.println( day + "\t" + secs + "\t" + distance);
-            System.out.println(day + " - " + secs + "-" + distance);
+            writer.println( day + "\t" + secs + "\t" + distance + "\t" + time + "\t" + vx + "\t" + vy);
+            //System.out.println(day + " - " + secs + "-" + distance + "\t" + time + "\t" + vx + "\t" + vy );
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-
 
     private static double distanceToMars(List<Particle> particles){
         Particle spaceship = particles.get(3);
