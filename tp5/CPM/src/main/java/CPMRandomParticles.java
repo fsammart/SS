@@ -12,6 +12,27 @@ public class CPMRandomParticles {
         return min + (max - min) * r.nextDouble();
     }
 
+    public static List<CPMParticle> getObstaclesRandomly(int N, double L, double W, double vel_min, double vel_max, double radius){
+        List<CPMParticle> particles = new ArrayList<>(N);
+        double step = (L -2)/(N);
+
+        for(int p =0; p < N; p++){
+            double x = randomDouble(1, L-1);
+            CPMParticle randomParticle = generateParticleFixed(x,W, radius,radius);
+            randomParticle.is_obstacle = true;
+            randomParticle.vel = randomDouble(vel_min, vel_max);
+            if(r.nextBoolean()){
+                randomParticle.angle = Math.PI/2;
+            }else{
+                randomParticle.angle = -Math.PI/2;
+            }
+            particles.add(randomParticle);
+        }
+
+        return particles;
+    }
+
+
     public static List<CPMParticle> getObstacles(int N, double L, double W, double vel_min, double vel_max, double radius){
         List<CPMParticle> particles = new ArrayList<>(N);
         double step = (L -2)/(N);

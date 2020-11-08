@@ -39,12 +39,9 @@ public class Particle implements Comparable<Particle>{
 
         double conoturDistancex = directDistancex;
         double contourDistancey = directDistancey;
-        /* check if particles are near through contour */
-        if ((L - directDistancex - r) < (directDistancex - r)){
-            conoturDistancex = L - directDistancex;
-        }
-        if ((L - directDistancey - r) < (directDistancey - r)){
-            contourDistancey = L - directDistancey;
+
+        if ((W - directDistancey - r) < (directDistancey - r)){
+            contourDistancey = W - directDistancey;
         }
         return Math.hypot(conoturDistancex, contourDistancey) - r;
     }

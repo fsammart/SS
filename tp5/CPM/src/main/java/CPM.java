@@ -1,6 +1,4 @@
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -37,14 +35,18 @@ public class CPM {
 
 
 
-    public void simulate(CPMParticle particle, double dt, double dt2, List<CPMParticle> obstacles, double time) throws IOException {
+    public void simulate(CPMParticle particle, double dt, double dt2,
+                         List<CPMParticle> obstacles, double time, boolean printPosition) throws IOException {
         double current_time = 0;
         Set<CPMParticle> escaped = new HashSet<>();
         Set<CPMParticle> reached = new HashSet<>();
         double ir = -Math.log(0.01)*CPMParticle.bp;
+        int collisions = 0;
+        double distance = 0;
+        double vel_avg =0;
         int i = 0;
         while (current_time <= time) {
-            if (true) {
+            if (printPosition) {
                 System.out.println("TIME -----" + current_time);
                 dynamicFile(particle,obstacles, i, L, W);
                 i++;
@@ -56,18 +58,19 @@ public class CPM {
             boolean collision = false;
 
             List<CPMParticle> ordered = obstacles.
-                    stream().sorted((x,y) -> Double.compare(particle.distanceTo(x) ,particle.distanceTo(y)))
+                    stream().sorted((x,y) -> Double.compare(particle.contourDistanceTo(x,L,W) ,particle.contourDistanceTo(y,L,W)))
                     .collect(Collectors.toList());
             CPMParticle closest = ordered.get(0);
 
             if(particle.distanceTo(closest) <= (CPMParticle.r_max - particle.radius) ){
-                CPMParticle.escape(particle, closest);
+                CPMParticle.escape(particle, closest,L,W);
+                collisions++;
                 collision = true;
             }
             if(!collision){
                 for(CPMParticle obs: ordered){
                     //elude
-                    int res = particle.elude(closest);
+                    int res = particle.elude(closest, L, W);
                     if(res == 1) {
                         break;
                     }
@@ -76,16 +79,20 @@ public class CPM {
                 particle.radius = particle.getNextRadius(dt);
             }
 
-            particle.move(dt, L, W);
+            distance += particle.move(dt, L, W);
             obstacles.stream().forEach(o -> {
                 o.move(dt, L, W);
             });
 
-            if (particle.distanceToGoal() < (3 * maxRadius)) {
+            vel_avg += particle.vel;
+
+            if (particle.distanceToGoal() < (maxRadius)) {
                 //reached
                 System.out.println("Particle reached goal:" + current_time);
+                printStatistics(current_time,collisions,distance, CPMParticle.ap, CPMParticle.bp,vel_avg/current_time);
                 return;
             }
+
 
             // take the ones that reached the goal
 
@@ -141,5 +148,28 @@ public class CPM {
             System.exit(1);
 
         }
+    }
+
+    public  void printStatistics(double current_time, int collisions, double distance, double a, double v, double vel) throws IOException {
+        File file = new File("results/statistics.tsv");
+        if(file.getParentFile() != null) {
+            file.getParentFile().mkdirs();
+        }
+
+        if(!file.exists()){
+            file.createNewFile();
+        }
+        FileWriter fr = new FileWriter(file, true);
+        BufferedWriter br = new BufferedWriter(fr);
+        try (PrintWriter writer = new PrintWriter(br)) {
+            writer.format("%f %d %f %f %f %f\n", current_time, collisions, distance, a , v, vel);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+
+        }
+        br.close();
+        fr.close();
     }
 }

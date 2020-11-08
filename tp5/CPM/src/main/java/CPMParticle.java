@@ -32,19 +32,29 @@ public class CPMParticle extends Particle{
         super(x, y, radius);
     }
 
-    public void move(double dt, double L, double W){
+    public double move(double dt, double L, double W){
         // TODO: check
-        this.x = (this.x + dt*this.vel * Math.cos(this.angle) + L)%L;
+        this.x = this.x + dt*this.vel * Math.cos(this.angle);
         this.y = (this.y + dt*this.vel * Math.sin(this.angle)+ W)%W;
+        return this.vel * dt;
     }
 
 
-    public static void escape(CPMParticle p1, CPMParticle p2){
+    public static void escape(CPMParticle p1, CPMParticle p2,double L, double W){
 
         p1.radius = p1.r_min;
         // change v direction;
         double dx = p2.x - p1.x;
         double dy = p2.y - p1.y;
+        //contour check
+
+        if ((W - Math.abs(dy) ) < Math.abs(dy)){
+            dy = W - Math.abs(dy);
+            if(dy > 0){
+                dy *= -1;
+            }
+        }
+
         double angle = Math.atan2(dy,dx);
         p1.vel = v_max;
         p1.angle = angle - Math.PI;
@@ -60,7 +70,7 @@ public class CPMParticle extends Particle{
         return v_max * Math.pow((radius-r_min)/(r_max-r_min), beta);
     }
 
-    public int elude(CPMParticle toElude){
+    public int elude(CPMParticle toElude, double L, double W){
 
         if(!toElude.is_obstacle){
             return 0;
@@ -69,10 +79,17 @@ public class CPMParticle extends Particle{
         double dx = toElude.x - this.x;
         double dy = toElude.y - this.y;
 
+        if ((W - Math.abs(dy) ) < Math.abs(dy)){
+            dy = W - Math.abs(dy);
+            if(dy > 0){
+                dy *= -1;
+            }
+        }
+
         double dx_t = goal_x - this.x;
         double dy_t = goal_y - this.y;
 
-        double dist = this.distanceTo(toElude);
+        double dist = Math.hypot(dx,dy);
 
         double angleToElude = Math.atan2(dy,dx);
         double angleToTarget =  getAngleToTarget();
@@ -86,7 +103,6 @@ public class CPMParticle extends Particle{
         }
 
         double coeff = ap * Math.exp(-dist/bp) * Math.cos(angle);
-        System.out.println("COEFF:" + coeff);
 
 
         double currentvx_direction = Math.cos(angleToTarget);
